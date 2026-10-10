@@ -1,6 +1,6 @@
 # 小麻雀追袋記（taiwan-sparrow）
 
-33 秒、1080×1920、24 fps。路線：`../../routes/照片塗鴉片.md`。成片、照片、配樂在 GitHub Release `taiwan-sparrow-v1`。
+33 秒、1080×1920、24 fps。路線：`../../routes/照片塗鴉片.md`。成片、照片、配樂在 [GitHub Release taiwan-sparrow-v1](https://github.com/gandongdexingfu/lemo-opuscar/releases/tag/taiwan-sparrow-v1)。
 
 | 檔案 | 用途 |
 |---|---|
