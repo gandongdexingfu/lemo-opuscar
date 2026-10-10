@@ -13,9 +13,9 @@
 
 ## 重建步驟
 1. 工程資料夾放 `scene/` 兩個檔，建 `lib` → `mine/vendor/huashu-art-motion` 的連結，`assets/` 放圖片（命名：f01_fire_lit/off … f11_smart_lit/off、earth、match_lit、match_off）。
-2. 圖片不進倉庫：從 Release **light-evolution-v1**（在舊底座 huashu-art-motion fork 上）下載 `light-evolution_assets.zip`（25 張最終照片，檔名已與代碼一致），解壓到 `assets/`。
-   https://github.com/gandongdexingfu/huashu-art-motion/releases/tag/light-evolution-v1
-   同一個 Release 還有成片（`_.v2_.2.mp4`，GitHub 把中文檔名去掉了）與 Gemini 配樂 `Above_the_Sleeping_World.mp3`。
+2. 圖片不進倉庫：從 Release **light-evolution-v1** 下載 `light-evolution_photos_1.zip` 和 `light-evolution_photos_2.zip`（共 25 張最終照片，檔名與代碼一致），一起解壓到 `assets/`。
+   https://github.com/gandongdexingfu/lemo-opuscar/releases/tag/light-evolution-v1
+   同一個 Release 還有成片 `light-evolution.mp4` 與 Gemini 配樂 `light-evolution_music.mp3`（原名 Above the Sleeping World）。
 3. 先出靜幀檢查 → 合成音效 → 整片渲染（~22 分鐘，nohup 背景跑）→ 換配樂 → >30MB 用 `-crf 24` 壓縮。
 
 ## 時間參數（scene.js 頂部）
