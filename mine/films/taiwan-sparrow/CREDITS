@@ -1,0 +1,10 @@
+小麻雀追袋記（Taiwan Sparrow）— 素材來源與授權
+
+照片：ChatGPT（OpenAI）生成，用戶擁有使用權。提示詞見 prompts/image_prompts.md。
+塗鴉、動畫、字卡：代碼繪製（canvas 2D），本專案原創。
+字體：LXGW WenKai TC（霞鶩文楷 TC），SIL Open Font License 1.1，經 Google Fonts 取得子集。
+配樂：本專案原創樂譜（score.py），以取樣器演奏：
+  Samples (CC0): FreePats project (freepats.zenvoid.org) — ukulele
+  Versilian Community Sample Library (Versilian Studios) — recorder, xylophone, glockenspiel, marimba, shaker, woodblock
+音效：numpy 程序化合成（mix.py），本專案原創。
+渲染工具：lemo-opuscar core/render（MIT）。
