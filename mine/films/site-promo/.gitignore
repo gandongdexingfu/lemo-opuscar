@@ -1,0 +1,6 @@
+out/
+frames/
+stills/
+music/*.wav
+*.mp4
+events.json
