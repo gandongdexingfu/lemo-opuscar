@@ -13,7 +13,8 @@ let PAT = "paper";
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 export const ln = (d, w = 2, extra = "") => (d ? `<path class="ln w${w}"${extra} pathLength="1" d="${d}"/>` : "");
 export const hid = (d) => (d ? `<path class="hid" d="${d}"/>` : "");
-const fillP = (d) => `<path class="f" fill="url(#${PAT})" d="${d}"/>`;
+const fillP = (d) => `<path class="f" d="${d}"/>`;
+const halo = (pl, z, P) => `<path class="halo" d="${k.slabOf(pl, z, 0.1, P, 10).fill}"/>`;   // 零件下方的柔和陰影
 export function solid(p, { w = 1, crease = 3, cls = "", wall = "", inner = "" } = {}) {
   const sh = p.shades.map((d, i) => (d ? `<path class="sh" data-s="${i}" d="${d}"/>` : "")).join("");
   return `<g class="s ${cls}">${fillP(p.fill)}${sh}${wall ? `<path class="sh" data-s="0" d="${wall}"/>` : ""}<path class="tp" d="${p.top}"/>${ln(p.crease, crease)}${inner}${ln(p.outline, w)}</g>`;
@@ -73,15 +74,15 @@ export function fig1dims(P) {
 // FIG. 02 背面爆炸圖（背面朝上：前面板在下 z=0，背板在上 z=11.6；x 由左到右＝從背面看）
 // 九組，依 iFixit 拆機的反向順序堆疊
 export const GROUPS = [
-  { id: "g1", name: "STAINLESS STEEL BEZEL", sub: [] },
-  { id: "g2", name: "COVER GLASS + TOUCH PANEL", sub: ["Balda touch screen", "Home button"] },
-  { id: "g3", name: "LCD MODULE", sub: ['3.5" · 480 × 320 · 163 ppi'] },
-  { id: "g4", name: "MIDFRAME + DISPLAY FLEX", sub: ["Vibrator motor", "Home dome switch"] },
-  { id: "g5", name: "SPEAKER ENCLOSURE + DOCK", sub: ["Antenna flex on enclosure", "30-pin dock connector"] },
-  { id: "g6", name: "LOGIC BOARD STACK", sub: ["339S0030 ARM · Samsung S5L8900", "PMB8876 S-Gold 2 baseband", "Marvell W8686 Wi-Fi", "CSR BC41B41 Bluetooth", "2 MP camera"] },
-  { id: "g7", name: "Li-ion POLYMER BATTERY", sub: ["3.7 V · 1400 mAh · soldered", "Apple 616-0290"] },
-  { id: "g8", name: "ALUMINUM REAR PANEL", sub: ["Headphone jack · SIM bracket", "A1203"] },
-  { id: "g9", name: "ANTENNA COVER", sub: ["Plastic RF window"] },
+  { id: "g1", name: "不锈钢边框", sub: [] },
+  { id: "g2", name: "玻璃盖板 + 触摸层", sub: ["Balda 电容触摸屏", "Home 键键帽"] },
+  { id: "g3", name: "LCD 显示模组", sub: ["3.5 英寸 · 480×320 · 163 ppi"] },
+  { id: "g4", name: "中框 + 显示排线", sub: ["S 形排线连接屏幕与主板", "振动马达 · Home 键弹片"] },
+  { id: "g5", name: "扬声器腔体 + 底部接口", sub: ["腔体背面贴着天线软板", "30 针 Dock 接口"] },
+  { id: "g6", name: "主板（双层叠板）", sub: ["处理器 Samsung S5L8900", "基带 Infineon S-Gold 2", "Wi-Fi Marvell W8686", "蓝牙 CSR BlueCore4", "200 万像素摄像头"] },
+  { id: "g7", name: "锂聚合物电池", sub: ["3.7 V · 1400 mAh", "直接焊在主板上，不可拆换"] },
+  { id: "g8", name: "铝合金后盖", sub: ["耳机孔 · SIM 卡托支架", "机身型号 A1203"] },
+  { id: "g9", name: "天线盖", sub: ["塑料材质，让信号穿透"] },
 ];
 
 export function fig2(P) {
@@ -97,6 +98,7 @@ export function fig2(P) {
 
   // ---- g2 玻璃＋觸控層（從背面看到玻璃內側）----
   pat("g2");
+  put("g2", halo(plan(1.5, 1.5, W - 3, H - 3, R - 1.5), 0.3, P));
   const xw = (W - AW) / 2;                         // 背面看左右鏡像，可視區置中所以不變
   const gz = 0.3, gh = 1.2, gt = gz + gh;
   const glass = k.slabOf(plan(1.5, 1.5, W - 3, H - 3, R - 1.5), gz, gh, P, 12);
@@ -112,6 +114,7 @@ export function fig2(P) {
 
   // ---- g3 LCD 模組（金屬背板朝上）----
   pat("g3");
+  put("g3", halo(plan((W - AW) / 2 - 1.0, WIN_Y - 2.4, AW + 2.0, AH + 5.0, 1.2), 1.6, P));
   const lz = 1.6, lh = 2.6, lt = lz + lh;
   const LCD = plan(xw - 1.0, WIN_Y - 2.4, AW + 2.0, AH + 5.0, 1.2);
   const lcd = k.slabOf(LCD, lz, lh, P, 3);
@@ -126,6 +129,7 @@ export function fig2(P) {
 
   // ---- g4 前框＋顯示屏托板＋S 形排線、震動馬達、Home 彈片 ----
   pat("g4");
+  put("g4", halo(plan(1.5, 1.5, W - 3, H - 3, R - 1.5), 1.6, P));
   const fz = 1.6, fh = 4.4;
   const FR = plan(1.5, 1.5, W - 3, H - 3, R - 1.5);
   const fr = frameSolid(FR, k.insetPlan(FR, 1.8), fz, fh, P, 12);
@@ -146,6 +150,7 @@ export function fig2(P) {
 
   // ---- g5 揚聲器腔（黑色塑膠空心件）＋天線軟板＋Dock ----
   pat("g5");
+  put("g5", halo(plan(3.4, 92.8, W - 6.8, 18.8, 3), 5.0, P));
   const EN = plan(3.4, 92.8, W - 6.8, 18.8, 3);
   const ez = 5.0, eh = 4.6;
   const en = k.slabOf(EN, ez, eh, P, 6);
@@ -162,6 +167,7 @@ export function fig2(P) {
 
   // ---- g6 主板疊層（通訊板在下、應用板在上）＋相機 ----
   pat("g6");
+  put("g6", halo(plan(3.4, 3.4, W - 6.8, 47.6, 1.6), 5.0, P));
   const bz0 = 5.0;
   const CB = plan(3.4, 3.4, W - 6.8, 47.6, 1.6);              // 通訊板【估：照片比例】
   put("g6", solid(k.slabOf(CB, bz0, 1.0, P, 3), { w: 1, inner: ln(k.sideSeam(CB, bz0 + 0.5, P, 3), 4) }));
@@ -192,6 +198,7 @@ export function fig2(P) {
 
   // ---- g7 電池（鋁塑膜、橙色膠帶包邊、標籤、焊線）----
   pat("g7");
+  put("g7", halo(plan(5.0, 53.6, W - 10, 37.6, 2.4), 5.0, P));
   const BAT = plan(5.0, 53.6, W - 10, 37.6, 2.4);
   const btz = 5.0, bth = 4.4, btt = btz + bth;
   const tape = k.lineOnTop([BAT.x + 3.2, BAT.y + 1.5], [BAT.x + 3.2, BAT.y + BAT.d - 1.5], btt, P) + k.lineOnTop([BAT.x + BAT.w - 3.2, BAT.y + 1.5], [BAT.x + BAT.w - 3.2, BAT.y + BAT.d - 1.5], btt, P) + k.lineOnTop([BAT.x + 1.5, BAT.y + 3.0], [BAT.x + BAT.w - 1.5, BAT.y + 3.0], btt, P);
@@ -205,6 +212,7 @@ export function fig2(P) {
 
   // ---- g8 鋁背板（弧面兩階、相機孔、刻字）＋耳機孔、SIM 支架、按鍵 ----
   pat("g8");
+  put("g8", halo(plan(0, 0, W, 92.6, R), 6.5, P));
   const rz = 9.6, seam = 92.6;
   // 背板內側掛著的零件先畫（在背板下方）
   const jackF = G.frameOf([52.4, -0.4, rz - 2.6], [0, 1, 0], [1, 0, 0], [0, 0, 1]);
@@ -222,6 +230,7 @@ export function fig2(P) {
 
   // ---- g9 天線蓋（黑色塑膠，細密剖面線表示深色材質）----
   pat("g9");
+  put("g9", halo(plan(0, 92.6, W, H - 92.6, 6), 9.6, P));
   const capRing = ringCustom(0, seam, W, H, 0, R, 10);
   const cap = k.extrude(capRing, rz, 1.0, P);
   const capTop = ringCustom(1.4, seam, W - 1.4, H - 1.4, 0, R - 1.4, 10);
@@ -247,3 +256,41 @@ export const ANCHORS = {
   g6: [W - 3.4, 30, 9.0], g7: [W - 5, 72, 9.4], g8: [W, 60, 11.6], g9: [W - 3, 104, 11.6],
 };
 export const DIM = { W, H, T };
+
+// =====================================================================================
+// 招牌時刻：2007 年的實體鍵盤手機（BlackBerry Curve 8300，2007-05）→ 初代 iPhone
+// 【官／GSMArena、bbref】107 × 60 × 15.5 mm；2.5"、320×240（160 ppi → 2.0″ × 1.5″ = 50.8 × 38.1 mm）；QWERTY＋軌跡球
+// 鍵盤排列、螢幕位置為示意【估】；不畫品牌標誌
+const BB = { W: 60, H: 107, T: 15.5, R: 7, scr: [4.6, 9.5, 50.8, 38.1] };
+const IP = { W, H, T, R, scr: [(W - AW) / 2, WIN_Y, AW, AH] };
+export const RATIO = { bb: 50.8 * 38.1 / (60 * 107), ip: AW * AH / (W * H) };
+const mix = (a, b, u) => a + (b - a) * u;
+// 機身＋螢幕的變形：u = 0（鍵盤機）→ 1（iPhone）；FIG.01 的 shell/body/glass 在 u=1 時接手
+export function morphFrame(u, P) {
+  PAT = "pp-f1";
+  const w = mix(BB.W, IP.W, u), h = mix(BB.H, IP.H, u), t = mix(BB.T, IP.T, u), r = mix(BB.R, IP.R, u);
+  const ox = (IP.W - w) / 2;                      // 置中變形
+  const s = BB.scr.map((v, i) => mix(v, IP.scr[i], u));
+  const sh = solid(k.slabOf(plan(ox + 1.4, 1.4, w - 2.8, h - 2.8, r - 1.4), 0, 1.6, P, 12), { w: 2 });
+  const body = solid(k.slabOf(plan(ox, 0, w, h, r), 1.6, t - 1.6, P, 12));
+  const scr = k.onTop(k.ringOf(plan(ox + s[0], s[1], s[2], s[3], 0.6), 2), t, P, true);
+  return sh + body + shadeFill(scr, 0) + ln(scr, 2);
+}
+// 鍵盤、導航列（軌跡球＋四個功能鍵）：各自一個零件，飛走用
+export function bbKeys(P) {
+  const z = BB.T, keys = [];
+  const rows = [10, 10, 9, 7];
+  rows.forEach((n, ri) => {
+    const pitch = 5.2, w = 4.4, y = 64 + ri * 9.4, x0 = (BB.W - n * pitch) / 2 + 0.4;
+    for (let c = 0; c < n; c++) {
+      const wide = ri === 3 && c === 3;           // 空白鍵
+      if (ri === 3 && c > 3 && c < 5) continue;
+      const kw = wide ? w + pitch * 1 : w;
+      keys.push({ row: ri, col: c, svg: solid(k.slabOf(plan(x0 + c * pitch, y, kw, 7.6, 1.6), z, 1.2, P, 3), { w: 2, inner: ln(k.planOutline(plan(x0 + c * pitch + 1.1, y + 1.4, kw - 2.2, 4.6, 1), z + 1.2, P, 3), 4) }) });
+    }
+  });
+  const nav = [solid(k.cylinder(BB.W / 2, 55.5, 3.0, z, 1.6, P, 32), { w: 1, inner: ln(k.ring(BB.W / 2, 55.5, 1.6, z + 1.6, P, 24), 4) })];
+  [[5, 51.5], [15, 51.5], [38, 51.5], [48, 51.5]].forEach(([x, y]) => nav.push(solid(k.slabOf(plan(x, y, 8, 7, 2.2), z, 0.8, P, 3), { w: 2 })));
+  return { keys, nav };
+}
+export const BBDIM = BB;

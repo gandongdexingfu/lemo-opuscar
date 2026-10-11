@@ -23,7 +23,10 @@ const groups = ip.GROUPS.map((g, i) => {
 // 外形包圍框（版面計算用）
 const { W, H, T } = ip.DIM;
 const box = (P, z0, z1) => { const pts = k.boxCorners({ x: 0, y: 0, w: W, d: H }, z0, z1).map((p) => k.iso(p, P)); const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]); return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)]; };
+const MORPH = Array.from({ length: 25 }, (_, i) => ip.morphFrame(i / 24, P1));
+const BBK = ip.bbKeys(P1);
 const out = {
+  morph: MORPH, bb: BBK, ratio: ip.RATIO,
   sheet: SHEET, scale: SCALE, az: AZ, gap: GAP, rise,
   fig1: { items: fig1, box: box(P1, 0, T), dims },
   fig2: { groups, box: box(P2, 0, T), top: box(P2, 0, T + 8 * GAP) },

@@ -2,11 +2,11 @@ iPhone 演變（樣片 FIG. 01 初代 iPhone 2007）· CREDITS
 
 畫面
 - Anatomy kit（iso-kit、lathe、tube）：github.com/wheresryan22/anatomy（MIT，見 mine/vendor/anatomy/），原封不動。
-- 曬圖紙材質：paper.py 程序生成，配色與層次參考 opuscar styles/blueprint 的 paper.js。
-- 所有零件幾何自己建模，依據專案文件「拆解/005_iPhone演變_考證_初代.md」：Apple 技術規格（support.apple.com/kb/SP2）、Apple 2007 新聞稿、iFixit 初代 iPhone 拆機與裝置頁、The Apple Wiki、Low End Mac。
+- 配色：Anatomy 淺色主題（light），強調色取自作品網站的訊號藍 #2F5BFF。
+- 所有零件幾何自己建模，依據專案文件「拆解/005_iPhone演變_考證_初代.md」：Apple 技術規格（support.apple.com/kb/SP2）、Apple 2007 新聞稿、iFixit 初代 iPhone 拆機與裝置頁、The Apple Wiki、Low End Mac；BlackBerry Curve 8300 數據：GSMArena、bbref.ca。
 
 字體（SIL Open Font License 1.1，Google Fonts）
-- B612、B612 Mono（The B612 Project Authors）
+- Noto Sans SC（Google，只取片中用到的字）、IBM Plex Mono（IBM）；授權見 fonts/
 
 品牌
 - 不畫任何品牌標誌；iPhone 為 Apple Inc. 的商標，本片為非官方科普作品。
