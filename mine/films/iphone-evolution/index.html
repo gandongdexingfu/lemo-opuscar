@@ -1,0 +1,219 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#0D1116}
+svg{display:block}
+:root{--lw:1}
+.ln{fill:none;stroke:#E7F0F9;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1 1;stroke-dashoffset:calc(1 - var(--p,1))}
+.w1{stroke-width:calc(var(--lw)*2.5px)}
+.w2{stroke-width:calc(var(--lw)*1.7px)}
+.w3{stroke-width:calc(var(--lw)*1.15px);stroke-opacity:.9}
+.w4{stroke-width:calc(var(--lw)*.8px);stroke-opacity:.62}
+.hid{fill:none;stroke:#E7F0F9;stroke-width:calc(var(--lw)*1.0px);stroke-dasharray:6 5;opacity:calc(var(--q,1)*.75)}
+.sh{opacity:var(--q,1)}
+.sh[data-s="0"]{fill:#020a24;fill-opacity:.42}
+.sh[data-s="1"]{fill:#020a24;fill-opacity:.30}
+.sh[data-s="2"]{fill:#020a24;fill-opacity:.19}
+.sh[data-s="3"]{fill:#020a24;fill-opacity:.10}
+.tp{fill:#d8e8ff;fill-opacity:.07;opacity:var(--q,1)}
+.dt circle{fill:#E7F0F9;opacity:calc(var(--q,1)*.75)}
+.et{fill:#E7F0F9;font-family:'B612 Mono';opacity:calc(var(--q,1)*.85)}
+.lab-name{font-family:B612;font-weight:700;fill:#E7F0F9;letter-spacing:.04em}
+.lab-sub{font-family:'B612 Mono';fill:#cfe0f5;letter-spacing:.01em}
+.lab-num{font-family:'B612 Mono';fill:#E7F0F9}
+.cap{font-family:B612;fill:#E7F0F9}
+.mono{font-family:'B612 Mono';fill:#E7F0F9}
+
+</style></head>
+<body>
+<svg id="v" width="1080" height="1920" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+  <defs id="defs">
+    <filter id="glow" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="0 0 0 0 0.91  0 0 0 0 0.94  0 0 0 0 0.98  2.2 2.2 2.2 0 -4.6" result="hi"/>
+      <feGaussianBlur in="hi" stdDeviation="2.2" result="b"/>
+      <feComponentTransfer in="b" result="b2"><feFuncA type="linear" slope=".55"/></feComponentTransfer>
+      <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="b2"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="1080" height="1920" fill="#0D1116"/>
+  <g id="world">
+    <rect id="desk" x="-3000" y="-3000" width="8000" height="10000" fill="#0D1116"/>
+    <rect id="sheetShadow" x="-186" y="-378" width="2400" height="5200" fill="#000" opacity=".55"/>
+    <image id="sheet" href="paper.jpg" x="-200" y="-400" width="2400" height="5200" preserveAspectRatio="none"/>
+    <g id="ink" filter="url(#glow)"></g>
+  </g>
+</svg>
+<script type="module">
+const J = await (await fetch('parts.json')).json();
+const NS = 'http://www.w3.org/2000/svg';
+const $ = (id) => document.getElementById(id);
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const ease = (x) => { x = clamp(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+const eout = (x) => 1 - Math.pow(1 - clamp(x), 3);
+const lin = (t, t0, t1) => clamp((t - t0) / (t1 - t0));
+const ink = $('ink'), defs = $('defs'), world = $('world');
+const DUR = 28.5;
+
+// ---- 圖紙紋理圖樣：每組一個，跟著零件反向平移，讓零件的「紙色填充」永遠和底下的紙對齊 ----
+const pats = {};
+const mkPat = (id) => { const p = el('pattern', { id, patternUnits: 'userSpaceOnUse', x: -200, y: -400, width: 2400, height: 5200 }, defs); el('image', { href: 'paper.jpg', x: -200, y: -400, width: 2400, height: 5200, preserveAspectRatio: 'none' }, p); pats[id] = p; return p; };
+mkPat('pp-f1'); J.fig2.groups.forEach((g) => mkPat('pp-' + g.id));
+
+// ---- 小工具：一個零件＝一個 <g>，用 --p（線條畫出進度）與 --q（明暗淡入）控制 ----
+const parts = [];
+function part(parent, svg, t0, dur) { const g = el('g', {}, parent); g.innerHTML = svg; parts.push({ g, t0, dur }); return g; }
+function reveal(t) {
+  for (const p of parts) {
+    const a = lin(t, p.t0, p.t0 + p.dur);
+    const q = lin(t, p.t0 + p.dur * .45, p.t0 + p.dur * 1.25);
+    const key = a.toFixed(3) + '|' + q.toFixed(3);
+    if (p.k !== key) { p.g.style.setProperty('--p', a.toFixed(4)); p.g.style.setProperty('--q', q.toFixed(4)); p.k = key; }
+  }
+}
+
+// ---- 文字：由左到右寫出（clipPath 矩形） ----
+let clipN = 0;
+const texts = [];
+function writeText(parent, { x, y, s, size, cls, t0, cps = 26, anchor = 'start', id }) {
+  const cid = 'c' + (clipN++);
+  const cp = el('clipPath', { id: cid }, defs);
+  const w = s.length * size * .66 + size;
+  const r = el('rect', { x: anchor === 'start' ? x - size * .2 : anchor === 'middle' ? x - w / 2 : x - w, y: y - size * 1.1, width: 0, height: size * 1.5 }, cp);
+  const tx = el('text', { x, y, class: cls, 'font-size': size, 'clip-path': `url(#${cid})`, 'text-anchor': anchor }, parent);
+  tx.textContent = s;
+  const dur = Math.max(.35, s.length / cps);
+  texts.push({ r, w, t0, dur, tx, s, id: id || cid });
+  return tx;
+}
+function revealText(t) { for (const o of texts) { const a = eout(lin(t, o.t0, o.t0 + o.dur)); o.r.setAttribute('width', (o.w * a).toFixed(1)); } }
+
+// ---- 中心線（長短點劃）：做成真的線段，才能逐筆畫出 ----
+function centreLine(a, b, dash = [26, 6, 4, 6]) {
+  const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy); let s = 0, i = 0, d = '';
+  while (s < L) { const len = dash[i % 4]; if (i % 2 === 0) { const e = Math.min(L, s + len); d += `M${(a[0] + dx * s / L).toFixed(1)} ${(a[1] + dy * s / L).toFixed(1)}L${(a[0] + dx * e / L).toFixed(1)} ${(a[1] + dy * e / L).toFixed(1)}`; } s += len; i++; }
+  return d;
+}
+
+// =========================================================================
+// FIG. 01（0.8–7.0 s）
+const F1 = el('g', {}, ink);
+const iso = (() => {    // 和 build.mjs 相同的投影（scale 4.6、方位 60°、仰角 30°）
+  const a = J.az * Math.PI / 180, e = Math.PI / 6, k = J.scale * Math.sqrt(1.6);
+  return (x, y, z) => [880 + (x * Math.sin(a) - y * Math.cos(a)) * k, 3380 + ((x * Math.cos(a) + y * Math.sin(a)) * Math.sin(e) - z * Math.cos(e)) * k];
+})();
+const cl1 = centreLine(iso(30.5, -14, 11.6), iso(30.5, 129, 11.6)) + centreLine(iso(-12, 57.5, 11.6), iso(73, 57.5, 11.6));
+part(F1, `<path class="ln w4" pathLength="1" d="${cl1}"/>`, .1, .9);
+const f1order = { shell: [1.0, .9], body: [1.15, 1.1], bezel: [1.5, .9], glass: [2.0, 1.1], bottom: [2.7, .7], sleep: [2.9, .5] };
+J.fig1.items.forEach((it) => { const [t0, d] = f1order[it.id]; part(F1, it.svg, t0, d); });
+// 尺寸線（官方數據）
+const D = J.fig1.dims;
+function dim(dd, t0, label) {
+  part(F1, `<path class="ln w4" pathLength="1" d="${dd.ext}"/><path class="ln w3" pathLength="1" d="${dd.line}"/><path class="ln w3" pathLength="1" d="${dd.heads}"/>`, t0, .7);
+  let ang = dd.angle; if (ang > 90) ang -= 180; if (ang < -90) ang += 180;
+  const g = el('g', { transform: `translate(${dd.mid[0].toFixed(1)} ${dd.mid[1].toFixed(1)}) rotate(${ang.toFixed(2)})` }, F1);
+  writeText(g, { x: 0, y: -9, s: label, size: 22, cls: 'lab-num', t0: t0 + .45, anchor: 'middle', cps: 14, id: 'dim' + label });
+}
+dim(D.d115, 3.75, '115 mm'); dim(D.d61, 4.15, '61 mm'); dim(D.d116, 4.55, '11.6 mm');
+// 圖號與名稱（左上方）
+const capX = 560, capY = 3858;
+const F1cap = el('g', {}, ink);
+writeText(F1cap, { x: capX, y: capY, s: 'FIG. 01', size: 30, cls: 'cap', t0: .5, cps: 18, id: 'fig01' });
+writeText(F1cap, { x: capX, y: capY + 40, s: 'iPHONE · 2007 · MODEL A1203', size: 21, cls: 'mono', t0: 1.0, cps: 24, id: 'f1name' });
+writeText(F1cap, { x: capX, y: capY + 70, s: 'FRONT ISOMETRIC', size: 17, cls: 'mono', t0: 1.6, cps: 24, id: 'f1view' });
+const strike = el('path', { class: 'ln w2', pathLength: 1, d: `M${capX - 4} ${capY - 10}L${capX + 132} ${capY - 10}` }, F1cap);
+parts.push({ g: strike, t0: 5.9, dur: .35 });
+strike.style.setProperty('--p', 0);
+
+// =========================================================================
+// FIG. 02（7.0 s 起）：九組
+const F2 = el('g', {}, ink);
+const G2 = J.fig2.groups.map((g, i) => {
+  const wrap = el('g', {}, F2);
+  const t0 = 7.0 + (8 - i) * .04;          // 背面組合圖：上層先畫
+  part(wrap, g.svg, t0, 1.2);
+  return { ...g, wrap, pat: pats['pp-' + g.id] };
+});
+// 爆炸：上層先走，每組間隔 0.24 s；每組 1.7 s
+const EX0 = 8.7;
+const shareOf = (i, t) => ease(lin(t, EX0 + (8 - i) * .24, EX0 + (8 - i) * .24 + 1.7));
+// 圖號改寫
+const F2cap = el('g', {}, ink);
+writeText(F2cap, { x: capX, y: capY + 40, s: 'FIG. 02 — EXPLODED VIEW · REAR', size: 26, cls: 'cap', t0: 6.6, cps: 22, id: 'fig02' });
+
+// ---- 標註：引線＋英文名（鏡頭往下掃時依序寫出） ----
+const LX = 1205;
+const labels = J.fig2.groups.map((g, i) => {
+  const t0 = 12.7 + (8 - i) * 1.18;
+  const grp = el('g', {}, ink);
+  const leader = el('path', { class: 'ln w3', pathLength: 1 }, grp);
+  const dot = el('circle', { r: 4.2, fill: '#E7F0F9' }, grp);
+  const num = String(9 - i).padStart(2, '0');   // 拆機順序：天線蓋 01 → 邊框 09
+  const lines = [];
+  const yl = 0;
+  const tg = el('g', {}, grp);
+  writeText(tg, { x: 0, y: 0, s: num, size: 22, cls: 'lab-num', t0: t0 + .35, cps: 30, id: 'n' + num });
+  writeText(tg, { x: 46, y: 0, s: g.name, size: 27, cls: 'lab-name', t0: t0 + .45, cps: 30, id: 'l' + num });
+  g.sub.forEach((s, j) => writeText(tg, { x: 46, y: 34 + j * 27, s, size: 19, cls: 'lab-sub', t0: t0 + .9 + j * .35, cps: 34, id: 'l' + num + 's' + j }));
+  return { g, i, t0, grp, leader, dot, tg };
+});
+function placeLabels(t) {
+  for (const L of labels) {
+    const lift = L.g.lift * shareOf(L.i, t);
+    const [ax, ay] = [L.g.anchor[0], L.g.anchor[1] - lift];
+    const yl = ay - 52;
+    const a = lin(t, L.t0, L.t0 + .5);
+    L.leader.setAttribute('d', `M${ax.toFixed(1)} ${ay.toFixed(1)}L${(ax + 34).toFixed(1)} ${yl.toFixed(1)}L${LX - 14} ${yl.toFixed(1)}`);
+    L.leader.style.setProperty('--p', ease(a).toFixed(4));
+    L.dot.setAttribute('cx', ax.toFixed(1)); L.dot.setAttribute('cy', ay.toFixed(1));
+    L.dot.setAttribute('opacity', clamp(a * 4).toFixed(3));
+    L.tg.setAttribute('transform', `translate(${LX} ${(yl + 9).toFixed(1)})`);
+  }
+}
+
+// ---- 標題欄（圖紙左下，結尾大遠景時讀） ----
+const TB = el('g', {}, ink);
+const tbx = 1250, tby = 3790;
+part(TB, `<path class="ln w2" pathLength="1" d="M${tbx} ${tby}H${tbx + 520}V${tby + 190}H${tbx}Z M${tbx} ${tby + 60}H${tbx + 520} M${tbx} ${tby + 125}H${tbx + 520} M${tbx + 300} ${tby + 125}V${tby + 190}"/>`, 24.6, 1.0);
+writeText(TB, { x: tbx + 18, y: tby + 42, s: 'iPHONE (1ST GEN) · 2007', size: 28, cls: 'cap', t0: 25.1, id: 'tb1' });
+writeText(TB, { x: tbx + 18, y: tby + 103, s: '115 × 61 × 11.6 mm · 135 g', size: 22, cls: 'mono', t0: 25.5, id: 'tb2' });
+writeText(TB, { x: tbx + 18, y: tby + 166, s: '9 ASSEMBLIES', size: 20, cls: 'mono', t0: 25.9, id: 'tb3' });
+writeText(TB, { x: tbx + 318, y: tby + 166, s: 'SHEET 01 / 11', size: 20, cls: 'mono', t0: 26.2, id: 'tb4' });
+
+// =========================================================================
+// 鏡頭：關鍵幀（世界座標中心、縮放）
+const CAM = [
+  [0.0, 868, 3610, 1.14], [3.6, 880, 3620, 1.24], [7.0, 880, 3620, 1.24], [8.6, 880, 3600, 1.2],
+  [11.9, 1060, 2280, .5], [13.0, 1120, 1010, .9], [24.4, 1120, 3330, .9], [27.0, 1080, 2260, .47], [28.5, 1080, 2260, .46],
+];
+function camAt(t) {
+  let i = 0; while (i < CAM.length - 2 && t > CAM[i + 1][0]) i++;
+  const [t0, x0, y0, z0] = CAM[i], [t1, x1, y1, z1] = CAM[i + 1];
+  const u = ease(lin(t, t0, t1));
+  return [x0 + (x1 - x0) * u, y0 + (y1 - y0) * u, Math.exp(Math.log(z0) + (Math.log(z1) - Math.log(z0)) * u)];
+}
+
+window.DUR = DUR;
+window.render = (t) => {
+  const [cx, cy, z] = camAt(t);
+  world.setAttribute('transform', `translate(540 960) scale(${z.toFixed(5)}) translate(${(-cx).toFixed(2)} ${(-cy).toFixed(2)})`);
+  document.documentElement.style.setProperty('--lw', (Math.pow(z, .65) / z).toFixed(4));   // 線寬（世界單位）：螢幕寬 = 基準 × zoom^0.65
+  // FIG.01 退場、FIG.02 進場
+  F1.setAttribute('opacity', (1 - lin(t, 6.2, 7.0)).toFixed(3));
+  F1cap.setAttribute('opacity', (1 - lin(t, 6.2, 6.6)).toFixed(3));
+  F1.style.display = t > 7.05 ? 'none' : '';
+  F2.style.display = t < 6.95 ? 'none' : '';
+  for (const g of G2) {
+    const lift = g.lift * shareOf(g.index, t);
+    g.wrap.setAttribute('transform', `translate(0 ${(-lift).toFixed(2)})`);
+    g.pat.setAttribute('patternTransform', `translate(0 ${lift.toFixed(2)})`);
+  }
+  reveal(t); revealText(t); placeLabels(t);
+};
+window.TEXTS = (t) => texts.filter((o) => t >= o.t0 + o.dur && getComputedStyle(o.tx).display !== 'none').map((o) => { const b = o.tx.getBoundingClientRect(); return { id: o.id, text: o.s, x0: b.left, y0: b.top, x1: b.right, y1: b.bottom }; }).filter((b) => b.x1 > 0 && b.y1 > 0);
+await document.fonts.ready;
+window.render(0);
+window.READY = true;
+</script>
+</body></html>
