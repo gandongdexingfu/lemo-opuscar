@@ -70,24 +70,27 @@ export function fig1dims(P) {
   return { d115, d61, d116 };
 }
 
+
+// #00 十字螺絲（頭部）：爆炸時浮在所屬零件上方【拆：全機約 16 顆 Phillips #00】
+const screwSvg = (x, y, z, P) => solid(k.cylinder(x, y, 1.15, z, 0.55, P, 18), { w: 2, inner: ln(k.lineOnTop([x - 0.6, y], [x + 0.6, y], z + 0.55, P) + k.lineOnTop([x, y - 0.6], [x, y + 0.6], z + 0.55, P), 3) });
 // =====================================================================================
 // FIG. 02 背面爆炸圖（背面朝上：前面板在下 z=0，背板在上 z=11.6；x 由左到右＝從背面看）
 // 九組，依 iFixit 拆機的反向順序堆疊
 export const GROUPS = [
-  { id: "g1", name: "不锈钢边框", sub: [] },
-  { id: "g2", name: "玻璃盖板 + 触摸层", sub: ["Balda 电容触摸屏", "Home 键键帽"] },
-  { id: "g3", name: "LCD 显示模组", sub: ["3.5 英寸 · 480×320 · 163 ppi"] },
-  { id: "g4", name: "中框 + 显示排线", sub: ["S 形排线连接屏幕与主板", "振动马达 · Home 键弹片"] },
+  { id: "g1", name: "金属边框", sub: ["包住玻璃边缘的亮面一圈"] },
+  { id: "g2", name: "玻璃盖板 + 触摸层", sub: ["电容式多点触控（Balda 供应）", "Home 键键帽"] },
+  { id: "g3", name: "LCD 显示模组", sub: ["3.5 英寸 · 480×320 · 163 ppi", "液晶面板 · LED 背光 · 金属背框"] },
+  { id: "g4", name: "中框 + 显示排线", sub: ["S 形排线连接屏幕与主板", "振动马达 · Home 键弹片", "#00 十字螺丝（全机约 16 颗）"] },
   { id: "g5", name: "扬声器腔体 + 底部接口", sub: ["腔体背面贴着天线软板", "30 针 Dock 接口"] },
-  { id: "g6", name: "主板（双层叠板）", sub: ["处理器 Samsung S5L8900", "基带 Infineon S-Gold 2", "Wi-Fi Marvell W8686", "蓝牙 CSR BlueCore4", "200 万像素摄像头"] },
+  { id: "g6", name: "主板（两层叠在一起）", sub: ["通讯板：基带 S-Gold 2 · 功放 Skyworks", "Wi-Fi Marvell W8686 · 蓝牙 CSR", "应用板：处理器 Samsung S5L8900", "SIM 卡座 · 200 万像素摄像头"] },
   { id: "g7", name: "锂聚合物电池", sub: ["3.7 V · 1400 mAh", "直接焊在主板上，不可拆换"] },
-  { id: "g8", name: "铝合金后盖", sub: ["耳机孔 · SIM 卡托支架", "机身型号 A1203"] },
+  { id: "g8", name: "铝合金后盖", sub: ["耳机孔 · SIM 卡托（回形针顶出）", "机身型号 A1203"] },
   { id: "g9", name: "天线盖", sub: ["塑料材质，让信号穿透"] },
 ];
 
 export function fig2(P) {
   const items = {};
-  const put = (g, svg) => (items[g] ||= []).push(svg);
+  const put = (g, svg, sub = 0, tag = '') => (items[g] ||= []).push({ svg, sub, tag });   // sub：組內再分開的層級（爆炸時多升 sub×6mm）
   const pat = (g) => (PAT = "pp-" + g);
   const full = plan(0, 0, W, H, R);
 
@@ -112,20 +115,28 @@ export function fig2(P) {
   // Home 鍵鍵帽（嵌在玻璃孔裡）
   put("g2", solid(k.cylinder(W / 2, HOME_Y, HOME_R - 0.4, gz - 0.3, 1.9, P, 40), { w: 2, inner: ln(k.ring(W / 2, HOME_Y, HOME_R - 1.6, gz + 1.6, P, 32), 4) }));
 
-  // ---- g3 LCD 模組（金屬背板朝上）----
+  // ---- g3 LCD 顯示模組：液晶面板（含玻璃上的驅動 IC）→ 側入式 LED 背光 → 金屬背框（一般 LCD 結構；位置【估】）----
   pat("g3");
-  put("g3", halo(plan((W - AW) / 2 - 1.0, WIN_Y - 2.4, AW + 2.0, AH + 5.0, 1.2), 1.6, P));
-  const lz = 1.6, lh = 2.6, lt = lz + lh;
+  const lz = 1.6;
   const LCD = plan(xw - 1.0, WIN_Y - 2.4, AW + 2.0, AH + 5.0, 1.2);
-  const lcd = k.slabOf(LCD, lz, lh, P, 3);
+  put("g3", halo(LCD, lz, P));
+  // 液晶面板：兩片玻璃夾液晶，下緣突出一段「台階」放驅動 IC
+  const cell = plan(LCD.x + 0.4, LCD.y + 0.4, LCD.w - 0.8, LCD.d - 0.8, 0.6);
+  put("g3", solid(k.slabOf(cell, lz, 0.8, P, 2), { w: 2, inner: ln(k.planOutline(plan(xw, WIN_Y, AW, AH, 0.4), lz + 0.8, P, 2), 3) + ln(k.lineOnTop([cell.x + 1, cell.y + cell.d - 4.2], [cell.x + cell.w - 1, cell.y + cell.d - 4.2], lz + 0.8, P), 4) }));
+  put("g3", solid(k.slabOf(plan(W / 2 - 9, cell.y + cell.d - 3.6, 18, 1.8, 0.2), lz + 0.8, 0.5, P, 2), { w: 2 }));       // 驅動 IC（COG）
+  // 背光：導光板＋下緣 LED 燈條
+  const lgp = plan(LCD.x + 0.6, LCD.y + 0.6, LCD.w - 1.2, LCD.d - 5.4, 0.6);
+  const lgpLines = Array.from({ length: 9 }, (_, i) => k.lineOnTop([lgp.x + 3, lgp.y + 6 + i * 8], [lgp.x + lgp.w - 3, lgp.y + 6 + i * 8], lz + 2.2, P)).join("");
+  put("g3", solid(k.slabOf(lgp, lz + 1.0, 1.2, P, 2), { w: 2, inner: ln(lgpLines, 4) }), 1);
+  put("g3", solid(k.slabOf(plan(lgp.x + 3, lgp.y + lgp.d + 0.3, lgp.w - 6, 2.4, 0.3), lz + 1.0, 1.2, P, 2), { w: 3 }) + dots(Array.from({ length: 6 }, (_, i) => k.iso([lgp.x + 6 + i * 8.2, lgp.y + lgp.d + 1.5, lz + 2.2], P)), 1.1), 1);
+  // 金屬背框：加強筋、標籤、排線
+  const lt = lz + 2.7;
   const stiff = k.planOutline(k.insetPlan(LCD, 3.2), lt, P, 3);
   const lbl = plan(xw + 8, WIN_Y + 18, 26, 14, 0.6);
   const lblLines = [0, 1, 2, 3].map((i) => k.lineOnTop([lbl.x + 3, lbl.y + 3 + i * 2.6], [lbl.x + (i === 3 ? 13 : 21), lbl.y + 3 + i * 2.6], lt, P)).join("");
-  // 背光 LED 條在下緣【估】、LCD 排線從下緣伸出
-  const ledEdge = k.lineOnTop([LCD.x + 2, LCD.y + LCD.d - 3.2], [LCD.x + LCD.w - 2, LCD.y + LCD.d - 3.2], lt, P);
-  put("g3", solid(lcd, { inner: ln(stiff, 3) + ln(k.planOutline(lbl, lt, P, 2), 3) + ln(lblLines, 4) + ln(ledEdge, 4) + ln(k.sideSeam(LCD, lz + 1.0, P, 3), 4) }));
-  const tab = ribbon([[W / 2, LCD.y + LCD.d - 1], [W / 2, LCD.y + LCD.d + 4.5]], 14, lt - 0.05, P, 2);
-  put("g3", `<g class="s">${fillP(tab.fill)}${flat(tab.fill)}${ln(tab.edges, 2)}</g>`);
+  put("g3", solid(k.slabOf(LCD, lz + 2.3, 0.4, P, 3), { inner: ln(stiff, 3) + ln(k.planOutline(lbl, lt, P, 2), 3) + ln(lblLines, 4) }), 2);
+  const tab = ribbon([[W / 2, LCD.y + LCD.d - 1], [W / 2, LCD.y + LCD.d + 4.5]], 14, lt + 0.02, P, 2);
+  put("g3", `<g class="s">${fillP(tab.fill)}${flat(tab.fill)}${ln(tab.edges, 2)}</g>`, 2);
 
   // ---- g4 前框＋顯示屏托板＋S 形排線、震動馬達、Home 彈片 ----
   pat("g4");
@@ -144,6 +155,7 @@ export function fig2(P) {
   // S 形顯示排線（照片：托板中下部的蛇形橙色排線）
   const S = ribbon([[W / 2, 96.5], [W / 2 + 10, 90], [W / 2 + 10, 80], [W / 2 - 10, 72], [W / 2 - 10, 62], [W / 2 + 6, 56], [W / 2 + 6, 49]], 7, pz + 0.55, P, 5);
   put("g4", `<g class="s">${fillP(S.fill)}${flat(S.fill)}${ln(S.edges, 2)}${ln(S.mid, 4)}</g>`);
+  put("g4", screws.map(([x, y]) => screwSvg(x, y, fz + fh, P)).join(""), 3);
   put("g4", solid(k.slabOf(plan(W / 2 + 1.5, 46.6, 9, 3.4, 0.5), pz + 0.5, 1.0, P, 2), { w: 2 }));   // 板對板接頭
   put("g4", solid(k.cylinder(50.5, 104.5, 4.6, pz + 0.5, 2.4, P, 40), { w: 2, inner: ln(k.ring(50.5, 104.5, 2.2, pz + 2.9, P, 24), 4) }));   // 震動馬達（圓餅形）
   put("g4", solid(k.cylinder(W / 2, HOME_Y, 3.0, pz + 0.5, 0.6, P, 28), { w: 3 }));   // Home 鍵彈片
@@ -159,42 +171,58 @@ export function fig2(P) {
   const flexEdge = k.planOutline(k.insetPlan(EN, 1.6), ez + eh, P, 4);
   put("g5", solid(en, { inner: ln(flexEdge, 2) + ln(meander.join(""), 4) + ln(k.sideSeam(EN, ez + 2.2, P, 6), 4) }));
   put("g5", solid(k.slabOf(plan(W / 2 - 11, 105.5, 22, 7.6, 0.8), ez - 0.2, 3.4, P, 2), { w: 2, inner: ln(onSide("y", 113.1, roundRect2(W / 2 - 9.5, ez + 0.6, 19, 2.0, 0.9), P, true), 3) }));   // 30 針 Dock 接口
-  // 天線同軸線兩條：從天線軟板出發，沿腔體頂面到邊緣的同軸接頭（另一端的插座在主板上）【拆：兩條天線線】
-  const coax = (x, y1) => G.fillet([[x, 97, ez + eh], [x, 95, ez + eh + 0.8], [x, y1, ez + eh + 0.8]], 1.6, 6);
-  put("g5", ln(pathOf(coax(9, 89.5).map((p) => k.iso(p, P))), 2) + ln(pathOf(coax(12.2, 90.5).map((p) => k.iso(p, P))), 3));
-  const plugF = (x, y) => G.frameOf([x, y, ez + eh + 0.8], [0, -1, 0], [1, 0, 0], [0, 0, 1]);
-  put("g5", solid(G.solidOf([[0, 0.9], [2.4, 0.9]], plugF(9, 89.5), P), { w: 3 }) + solid(G.solidOf([[0, 0.9], [2.4, 0.9]], plugF(12.2, 90.5), P), { w: 3 }));
 
-  // ---- g6 主板疊層（通訊板在下、應用板在上）＋相機 ----
+  // ---- g6 主板：應用處理器板（下、靠屏幕）＋通訊板（上、靠背面，隔間屏蔽罩）＋相機 ----
+  // 晶片位置由 iFixit 拆機照片換算：通訊板照片旋轉 180°（電池焊線朝下、同軸接頭在左，與機內照片吻合）；
+  // 應用板旋轉 90°（SIM 卡座朝頂端，對上背板的 SIM 支架）。比例 0.0725 mm/像素【估】
   pat("g6");
-  put("g6", halo(plan(3.4, 3.4, W - 6.8, 47.6, 1.6), 5.0, P));
-  const bz0 = 5.0;
-  const CB = plan(3.4, 3.4, W - 6.8, 47.6, 1.6);              // 通訊板【估：照片比例】
-  put("g6", solid(k.slabOf(CB, bz0, 1.0, P, 3), { w: 1, inner: ln(k.sideSeam(CB, bz0 + 0.5, P, 3), 4) }));
-  const cbShield = plan(4.4, 22, 13.2, 27, 0.8);              // 通訊板外露部分的屏蔽罩
-  put("g6", solid(k.slabOf(cbShield, bz0 + 1.0, 1.4, P, 2), { w: 2, inner: ln(k.planOutline(k.insetPlan(cbShield, 1.2), bz0 + 2.4, P, 2), 4) }) + dots(k.dotGrid(cbShield.x + 2.6, cbShield.y + 3, 4, 8, 2.8, bz0 + 2.4, P), 0.55));
-  // 板對板連接器（兩層板之間）
-  put("g6", solid(k.slabOf(plan(22, 40, 14, 4, 0.5), bz0 + 1.0, 1.6, P, 2), { w: 2 }));
-  // 應用板（含 SIM 卡座）
-  const AB = plan(18.6, 3.4, W - 22, 44.6, 1.6);
-  const az = bz0 + 2.6;
-  put("g6", solid(k.slabOf(AB, az, 1.0, P, 3), { w: 1, inner: ln(k.sideSeam(AB, az + 0.5, P, 3), 4) }));
-  const sim = plan(34.6, 4.4, 15, 22, 0.6);                    // SIM 卡座【拆：在板上，靠近頂端】
-  put("g6", solid(k.slabOf(sim, az + 1.0, 1.6, P, 2), { w: 2, inner: ln(k.planOutline(k.insetPlan(sim, 1.8), az + 2.6, P, 2), 4) + ln([0, 1, 2, 3, 4, 5].map((i) => k.lineOnTop([sim.x + 4 + (i % 3) * 3.4, sim.y + 6 + Math.floor(i / 3) * 9], [sim.x + 4 + (i % 3) * 3.4, sim.y + 9 + Math.floor(i / 3) * 9], az + 2.6, P)).join(""), 3) }));
-  const big = plan(19.6, 27, 36, 19.6, 0.8);                   // 大屏蔽罩（下有 SoC＋SDRAM 堆疊、NAND）
-  put("g6", solid(k.slabOf(big, az + 1.0, 1.5, P, 2), { w: 2, inner: ln(k.planOutline(k.insetPlan(big, 1.4), az + 2.5, P, 2), 4) }) + dots(k.dotGrid(big.x + 3, big.y + 3.2, 11, 5, 3.0, az + 2.5, P), 0.55));
-  const small = plan(51, 5.4, 6, 18, 0.6);
-  put("g6", solid(k.slabOf(small, az + 1.0, 1.2, P, 2), { w: 2 }));
-  // 隱藏線：屏蔽罩下的晶片（藍圖慣例：虛線）；位置示意
-  put("g6", hid(k.planOutline(plan(24, 30, 12, 12, 0.4), az + 2.5, P, 2) + k.planOutline(plan(39, 30, 13, 13, 0.4), az + 2.5, P, 2) + k.planOutline(plan(6.2, 25, 9.6, 9.6, 0.3), bz0 + 2.4, P, 2)));
-  // 主板固定螺絲（3 顆【拆】）、天線同軸接頭（2 個【拆】）、電池焊點
-  put("g6", ln([[21.2, 6.8], [55.4, 44.6]].map(([x, y]) => k.ring(x, y, 1.1, az + 1.0, P, 14)).join("") + k.ring(6.4, 46, 1.1, bz0 + 1.0, P, 14), 3) + dots([[21.2, 6.8, az + 1.0], [55.4, 44.6, az + 1.0], [6.4, 46, bz0 + 1.0]].map((p) => k.iso(p, P)), 0.7));
-  put("g6", solid(k.cylinder(9, 18, 1.3, bz0 + 1.0, 1.2, P, 18), { w: 3 }) + solid(k.cylinder(11.6, 14.4, 1.3, bz0 + 1.0, 1.2, P, 18), { w: 3 }));
-  put("g6", solid(k.slabOf(plan(21, 48.6, 7, 2.6, 0.3), az, 0.6, P, 2), { w: 3 }));   // 電池焊點
-  // 2 MP 相機模組（背面看左上）＋鏡頭
+  const az0 = 5.0, czb = 7.0;
+  const chip = (x0, y0, x1, y1, z, h, mark, sub, size = 1.5) => solid(k.slabOf(plan(x0, y0, x1 - x0, y1 - y0, 0.3), z, h, P, 2), { w: 2, inner: mark ? text(P, [x0 + 0.8, (y0 + y1) / 2 + 0.5], z + h, mark, size) : "" });
+  // 應用處理器板
+  const AB = plan(21, 3.4, 34.4, 29, 1.2);
+  put("g6", halo(AB, az0, P));
+  put("g6", solid(k.slabOf(AB, az0, 0.9, P, 3), { w: 1, inner: ln(k.sideSeam(AB, az0 + 0.45, P, 3), 4) }));
+  const at = az0 + 0.9;
+  const simS = plan(32.6, 4.85, 15.2, 10.2, 0.4);           // SIM 卡座
+  put("g6", solid(k.slabOf(simS, at, 1.2, P, 2), { w: 2, inner: ln(k.planOutline(k.insetPlan(simS, 1.4), at + 1.2, P, 2), 4) + ln([0, 1, 2].map((i) => k.lineOnTop([simS.x + 4 + i * 3.4, simS.y + 3], [simS.x + 4 + i * 3.4, simS.y + 6.6], at + 1.2, P)).join(""), 3) }));
+  put("g6", chip(33.0, 20.1, 43.1, 31.7, at, 1.4, "339S0030 ARM", 0, 1.3));     // Samsung S5L8900 處理器（疊 SDRAM）
+  put("g6", chip(48.5, 22.6, 52.5, 27.0, at, 0.8, "", 0));                       // Wolfson WM8758 音訊
+  put("g6", chip(29.7, 21.5, 31.9, 25.9, at, 0.7, "", 0));                       // Linear 4066 充電
+  put("g6", chip(23.2, 14.6, 29.3, 20.4, at, 0.9, "", 0));
+  put("g6", chip(44.2, 27.7, 54.0, 31.7, at, 1.3, "", 0));                       // 板對板連接器
+  // 2 MP 相機（背面看左上）
   const CAM = plan(5.0, 4.6, 8.4, 8.4, 0.8);
-  put("g6", solid(k.slabOf(CAM, bz0 + 1.0, 3.8, P, 2), { w: 1 }));
-  put("g6", solid(k.cylinder(9.2, 8.8, 2.7, bz0 + 4.8, 1.1, P, 32), { w: 1, inner: ln(k.ring(9.2, 8.8, 1.5, bz0 + 5.9, P, 28), 3) + ln(k.ring(9.2, 8.8, 0.7, bz0 + 5.9, P, 20), 4) }));
+  put("g6", solid(k.slabOf(CAM, az0, 4.6, P, 2), { w: 1 }));
+  put("g6", solid(k.cylinder(9.2, 8.8, 2.7, az0 + 4.6, 1.1, P, 32), { w: 1, inner: ln(k.ring(9.2, 8.8, 1.5, az0 + 5.7, P, 28), 3) + ln(k.ring(9.2, 8.8, 0.7, az0 + 5.7, P, 20), 4) }));
+  // 通訊板（階梯形外框，照片換算）
+  const CBring = [[3.5, 20.7], [20.2, 20.7], [20.2, 25.8], [45.9, 25.8], [45.9, 27.95], [57.5, 27.95], [57.5, 50.4], [3.5, 50.4]];
+  put("g6", halo({ x: 3.5, y: 20.7, w: 54, d: 29.7, r: 1 }, czb, P), 1);
+  put("g6", solid(k.extrude(CBring, czb, 0.9, P, { convex: false }), { w: 1 }), 1);
+  const ct = czb + 0.9;
+  // 隔間屏蔽框（圍牆）
+  const wall = (x0, y0, x1, y1) => solid(k.slabOf(plan(Math.min(x0, x1), Math.min(y0, y1), Math.max(0.45, Math.abs(x1 - x0)), Math.max(0.45, Math.abs(y1 - y0)), 0.1), ct, 1.3, P, 1), { w: 3, crease: 4 });
+  const walls = [[4.2, 21.3, 4.2, 49.8], [4.2, 49.8, 56.9, 49.8], [56.9, 28.5, 56.9, 49.8], [40.7, 26.4, 40.7, 49.8], [16.6, 21.3, 16.6, 49.8], [4.2, 37.4, 16.6, 37.4], [22.7, 26.9, 39.0, 26.9], [22.7, 37.4, 39.0, 37.4], [22.7, 26.9, 22.7, 37.4], [39.0, 26.9, 39.0, 37.4], [4.2, 21.3, 19.6, 21.3], [40.7, 39.8, 56.9, 39.8]];
+  // 晶片（照片換算位置，標上晶片打印）
+  put("g6", chip(41.9, 41.0, 53.2, 49.3, ct, 1.1, "1030W0YTQ2", 1, 1.25)    // Intel NOR+SRAM 快閃
+    + chip(41.9, 29.0, 53.2, 39.2, ct, 1.2, "337S3235", 1, 1.3)                 // Infineon PMB8876 S-Gold 2
+    + chip(25.6, 42.8, 32.9, 49.0, ct, 0.9, "338S0289", 1, 1.0)                 // Infineon 收發器（白貼紙）
+    + chip(17.3, 36.3, 22.0, 40.6, ct, 0.6, "", 1)                              // CSR BlueCore4 藍牙
+    + chip(6.4, 38.2, 16.0, 45.4, ct, 1.0, "SKY77340", 1, 1.2)                  // Skyworks 功放
+    + chip(6.4, 26.5, 15.1, 36.6, ct, 1.1, "338S0297", 1, 1.2)                  // 338S0297
+    + chip(30.0, 28.0, 35.8, 33.0, ct, 0.8, "W8686", 1, 1.1), 1);              // Marvell Wi-Fi
+  put("g6", walls.map((w) => wall(...w)).join(""), 1);
+  put("g6", solid(k.cylinder(8.9, 48.4, 1.0, ct, 1.0, P, 16), { w: 3 }) + solid(k.cylinder(18.7, 23.6, 1.0, ct, 1.0, P, 16), { w: 3 }), 1);   // 天線同軸接頭
+  put("g6", solid(k.slabOf(plan(12.4, 49.2, 9.6, 1.2, 0.2), ct, 0.4, P, 2), { w: 3 }), 1);                                                    // 電池焊盤
+  // 兩條天線同軸線（白色）：從接頭沿左側往下到底部天線【拆：機內照片】
+  const coax = (x, y, ox) => G.fillet([[x, y, ct + 1.0], [ox, y, ct + 1.0], [ox, 93, ct + 1.0]], 2.4, 7);
+  put("g6", ln(pathOf(coax(18.7, 23.6, 2.4).map((p) => k.iso(p, P))), 2) + ln(pathOf(coax(8.9, 48.4, 3.4).map((p) => k.iso(p, P))), 2), 1);
+  const plugF = (x) => G.frameOf([x, 93, ct + 1.0], [0, 1, 0], [1, 0, 0], [0, 0, 1]);
+  put("g6", solid(G.solidOf([[0, 0.9], [2.6, 0.9]], plugF(2.4), P), { w: 3 }) + solid(G.solidOf([[0, 0.9], [2.6, 0.9]], plugF(3.4), P), { w: 3 }), 1);
+  put("g6", [[5.6, 15.4, az0 + 0.9], [11.0, 49.4, czb + 0.9], [55.6, 52.0, czb + 0.9]].map(([x, y, z]) => screwSvg(x, y, z, P)).join(""), 3);   // 主板螺絲 3 顆【拆】
+  // 屏蔽罩上蓋（巡覽時掀開）
+  const lid = k.extrude(CBring.map(([x, y]) => [x + (x < 10 ? 0.6 : x > 50 ? -0.6 : 0), y + (y < 30 ? 0.6 : -0.6)]), ct + 1.3, 0.35, P, { convex: false });
+  const tabs = [[12, 30], [30, 44], [48, 34], [26, 31]].map(([x, y]) => k.planOutline(plan(x, y, 4, 2.4, 0.6), ct + 1.65, P, 2)).join("");
+  put("g6", solid(lid, { w: 2, inner: ln(tabs, 4) }), 2, "lid");
 
   // ---- g7 電池（鋁塑膜、橙色膠帶包邊、標籤、焊線）----
   pat("g7");
@@ -207,8 +235,8 @@ export function fig2(P) {
   const barcode = Array.from({ length: 22 }, (_, i) => k.lineOnTop([L.x + 3 + i * 0.9 + (i % 3) * 0.2, L.y + L.d - 4.6], [L.x + 3 + i * 0.9 + (i % 3) * 0.2, L.y + L.d - 2.2], btt, P)).join("");
   put("g7", solid(k.slabOf(BAT, btz, bth, P, 6), { inner: ln(tape, 4) + ln(k.planOutline(L, btt, P, 2), 3) + ln(rules, 4) + ln(barcode, 4) + text(P, [L.x + 3, L.y + 6.4], btt, "616-0290  3.7V", 2.6) + ln(k.sideSeam(BAT, btz + 2.2, P, 6), 4) }));
   // 兩條焊線（紅黑）：電池上緣 → 主板焊點
-  const wire = (x) => G.fillet([[x, 53.8, btt - 1.2], [x, 52.2, btt - 0.2], [x - 1, 49.6, az + 0.6]], 1.2, 6);
-  put("g7", ln(pathOf(wire(23).map((p) => k.iso(p, P))), 2) + ln(pathOf(wire(26).map((p) => k.iso(p, P))), 2) + dots([k.iso([22, 49.6, az + 0.6], P), k.iso([25, 49.6, az + 0.6], P)], 1.0));
+  const wire = (x) => G.fillet([[x, 53.8, btt - 1.2], [x, 52.4, btt - 0.2], [x - 1, 49.8, btt - 0.6]], 1.2, 6);
+  put("g7", ln(pathOf(wire(16).map((p) => k.iso(p, P))), 2) + ln(pathOf(wire(19).map((p) => k.iso(p, P))), 2) + dots([k.iso([15, 49.8, btt - 0.6], P), k.iso([18, 49.8, btt - 0.6], P)], 1.0));
 
   // ---- g8 鋁背板（弧面兩階、相機孔、刻字）＋耳機孔、SIM 支架、按鍵 ----
   pat("g8");
@@ -218,6 +246,9 @@ export function fig2(P) {
   const jackF = G.frameOf([52.4, -0.4, rz - 2.6], [0, 1, 0], [1, 0, 0], [0, 0, 1]);
   put("g8", solid(G.solidOf([[0, 2.6], [1.2, 2.6], [1.2, 2.9], [13.5, 2.9]], jackF, P), { w: 2 }));       // 3.5 mm 耳機孔（內凹）
   put("g8", solid(k.slabOf(plan(33.6, 1.0, 17, 22, 0.6), rz - 0.7, 0.7, P, 2), { w: 3 }));              // SIM 支架
+  // SIM 卡托＋SIM 卡：用迴紋針從頂部頂出（爆炸前先退出來）【拆】
+  const tray = plan(35.2, -0.6, 12.2, 17.4, 0.6);
+  put("g8", solid(k.slabOf(tray, rz - 2.0, 0.6, P, 2), { w: 2 }) + solid(k.slabOf(plan(36.4, 1.6, 9.8, 13.6, 0.4), rz - 1.4, 0.35, P, 2), { w: 2, inner: ln(k.planOutline(plan(38.2, 4.2, 6.2, 5.2, 0.6), rz - 1.05, P, 3), 3) }) + solid(k.slabOf(plan(36.2, -1.2, 10.2, 0.6, 0.2), rz - 2.0, 1.6, P, 2), { w: 2 }), 0, "sim");
   const shellRing = ringCustom(0, 0, W, seam, R, 0, 10);
   const shell = k.extrude(shellRing, rz, 1.0, P);
   const curve = ringCustom(1.4, 1.4, W - 1.4, seam, R - 1.4, 0, 10);
