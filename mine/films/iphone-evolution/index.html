@@ -28,6 +28,9 @@ svg{display:block}
 .lead{fill:none;stroke:#9A9AA0;stroke-width:calc(var(--lw)*1.1px);stroke-dasharray:1 1;stroke-dashoffset:calc(1 - var(--p,0))}
 .grid line{stroke:var(--blue);stroke-width:1.1px;vector-effect:non-scaling-stroke}
 .hudt{font-family:'IBM Plex Mono';font-weight:500;fill:var(--blue)}
+.tbb{fill:#F2F2EF;opacity:var(--q,1)}.tbs{fill:#FCFCFB;opacity:var(--q,1)}.tbd{fill:#D6D6D2;opacity:var(--q,1)}
+.wire-r .tbb{fill:#C9605A}.wire-r .tbs{fill:#DE8C86}.wire-r .tbd{fill:#A84841}
+.wire-k .tbb{fill:#4A4A50}.wire-k .tbs{fill:#6E6E74}.wire-k .tbd{fill:#36363B}
 </style></head>
 <body>
 <svg id="v" width="1920" height="1080" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
@@ -169,16 +172,20 @@ writeText(hud, { x: HX, y: HY + 56, s: '屏幕 3.5 英寸 · 480×320 · 163 ppi
 // =========================================================================
 // 4. FIG.02 背面：九組（階梯式爆炸）
 const F2 = el('g', {}, ink);
-const G2 = J.fig2.groups.map((g, i) => {
-  const wrap = el('g', {}, F2);
-  const layers = g.layers.map((L) => { const lg = el('g', {}, wrap); part(lg, L.svg, T.f2 + (8 - i) * .04, 1.3); return { ...L, g: lg }; });
-  return { ...g, wrap, layers };
-});
-const shareOf = (i, t) => ease(lin(t, T.ex + Math.abs(i - 4) * .12, T.ex + Math.abs(i - 4) * .12 + 2.2));
-writeText(hud, { x: HX, y: HY, s: '背面爆炸图', size: 46, cls: 'cap', t0: T.f2, cps: 10, id: 'c1', out: T.ex + 3.2 });
-writeText(hud, { x: HX, y: HY + 60, s: '9 个组件，从正面到背面编号', size: 28, cls: 'cap2', t0: T.f2 + .8, cps: 14, id: 'c2', out: T.ex + 3.2 });
+// 精確版：每個零件一個 <g>，順序由 Anatomy audit 算出的 key＋爆炸位移決定（每幀重排，同 Raptor）
+const IT2 = J.fig2.items.map((it) => { const g = el('g', {}, F2); part(g, it.svg, T.f2 + (8 - it.g) * .04, 1.3); return { ...it, el: g, k: it.keys.A }; });
+let ORDER2 = '';
+const G2 = J.fig2.groups.map((g) => ({ ...g, items: IT2.filter((it) => it.g === g.index) }));
+// 三段爆炸（時間表與 audit 同一份 J.tl）：A 抬升成塔 → B 各組在各自高度上滑到階梯位置 → C 組內分層升起
+const TL = J.tl;
+const shA = (t) => ease(lin(t, T.ex + TL.lift[0], T.ex + TL.lift[1]));
+const shB = (i, t) => ease(lin(t, T.ex + TL.slide0 + Math.abs(i - 4) * TL.stagger, T.ex + TL.slide0 + Math.abs(i - 4) * TL.stagger + TL.slideDur));
+const shC = (t) => ease(lin(t, T.ex + TL.subs[0], T.ex + TL.subs[1]));
+const shareOf = (i, t) => shB(i, t);
+writeText(hud, { x: HX, y: HY, s: '背面爆炸图', size: 46, cls: 'cap', t0: T.f2, cps: 10, id: 'c1', out: T.ex + 3.0 });
+writeText(hud, { x: HX, y: HY + 60, s: '9 个组件，从正面到背面编号', size: 28, cls: 'cap2', t0: T.f2 + .8, cps: 14, id: 'c2', out: T.ex + 3.0 });
 // SIM 卡托標註（世界座標，跟著卡托）
-const simG = G2[7].layers.find((L) => L.tag === 'sim').g;
+const SIMS = IT2.filter((it) => it.tag === 'sim'), SIMGI = SIMS[0].g;
 const simLab = el('g', {}, ink);
 writeText(simLab, { x: 0, y: 0, s: 'SIM 卡托 · 回形针一顶就弹出', size: 24, cls: 'cap2', t0: T.sim + .6, cps: 14, id: 'sim', out: T.ex + .2 });
 
@@ -188,8 +195,8 @@ const HOLD = (i) => (i === 5 ? 5.4 : 2.7);
 const stops = []; { let t = TOUR0; for (let i = 0; i < 9; i++) { stops.push({ i, t, hold: HOLD(i) }); t += HOLD(i) + MOVE; } }
 const TOUR1 = stops[8].t + stops[8].hold;
 const B = J.fig2.box; const BC = [(B[0] + B[2]) / 2, (B[1] + B[3]) / 2];
-const ZTOP = [2.2, 1.9, 4.3, 6.0, 9.6, 9.6, 9.4, 11.6, 11.6];
-const EXTRA = [0, 0, 2, 3, 0, 2, 0, 0, 0];      // 組內最高分層
+const ZTOP = J.fig2.groups.map((g) => g.ztop);
+const EXTRA = J.fig2.groups.map((g) => (g.extra >= 3 ? g.extra - 1 : g.extra));   // 組內最高分層（螺絲層不算）
 const labels = J.fig2.groups.map((g, i) => {
   const above = i % 2 === 0, st = stops[i], t0 = st.t - .15;
   const grp = el('g', {}, ink);
@@ -204,7 +211,7 @@ const labels = J.fig2.groups.map((g, i) => {
   g.sub.forEach((s, j) => writeText(tg, { x: 54, y: subY0 + j * 32, s, size: 24, cls: 'lab-sub', t0: t0 + .9 + j * .3, cps: 26, id: 'l' + num + 's' + j }));
   return { g, i, above, st, t0, grp, leader, dot, tg };
 });
-function groupOff(i, t) { const s = shareOf(i, t), g = J.fig2.groups[i]; return [g.off[0] * s, g.off[1] * s]; }
+function groupOff(i, t) { const a = shA(t), b = shB(i, t), g = J.fig2.groups[i]; return [g.liftS[0] * a + g.slideS[0] * b, g.liftS[1] * a + g.slideS[1] * b]; }
 function placeLabels(t) {
   for (const L of labels) {
     const [ox, oy] = groupOff(L.i, t);
@@ -218,7 +225,7 @@ function placeLabels(t) {
     L.dot.setAttribute('cx', ax.toFixed(1)); L.dot.setAttribute('cy', ay.toFixed(1)); L.dot.setAttribute('opacity', clamp(a * 4).toFixed(3));
     L.tg.setAttribute('transform', `translate(${(ax + 50).toFixed(1)} ${ly.toFixed(1)})`);
     const lit = lin(t, L.st.t - .2, L.st.t + .3) * (1 - lin(t, L.st.t + L.st.hold + .2, L.st.t + L.st.hold + .7));
-    G2[L.i].wrap.style.setProperty('--lit', lit.toFixed(3));
+    const ls = lit.toFixed(3); for (const it of G2[L.i].items) it.el.style.setProperty('--lit', ls);
   }
 }
 
@@ -236,15 +243,16 @@ writeText(TB, { x: tbx + 22, y: tby + 248, s: '数据：Apple 官方规格 · iF
 // 鏡頭（世界中心、縮放）
 const FC = [BC[0] + 260, BC[1] - 10];           // FIG.01：機身在左半，字卡在右
 const GC = J.pts.glassC;
-const CAM = [[0, FC[0], FC[1], 1.16], [6.0, FC[0], FC[1], 1.24], [T.dive0, FC[0], FC[1], 1.24], [T.dive1, GC[0], GC[1] + 10, 3.1], [T.back0, GC[0] + 6, GC[1] + 4, 3.2], [T.back1, FC[0], FC[1], 1.24], [T.out1, FC[0], FC[1], 1.24], [T.ex, FC[0], FC[1], 1.15], [T.ex + 3.4, -14, 150, .45], [TOUR0 - .6, -14, 150, .45]];
+const CAM = [[0, FC[0], FC[1], 1.16], [6.0, FC[0], FC[1], 1.24], [T.dive0, FC[0], FC[1], 1.24], [T.dive1, GC[0], GC[1] + 10, 3.1], [T.back0, GC[0] + 6, GC[1] + 4, 3.2], [T.back1, FC[0], FC[1], 1.24], [T.out1, FC[0], FC[1], 1.24], [T.ex, FC[0], FC[1], 1.15], [T.ex + 1.3, 300, -70, .92], [T.ex + 3.4, -14, 150, .45], [TOUR0 - .6, -14, 150, .45]];
 stops.forEach((s) => { const g = J.fig2.groups[s.i]; const cy = BC[1] + g.off[1] + 20 - (s.i === 5 ? 50 : 0); const cx = BC[0] + g.off[0] + 330; CAM.push([s.t, cx, cy, .9]); CAM.push([s.t + s.hold, cx + 16, cy, .9]); });
 CAM.push([TOUR1 + 3.0, -14, 330, .44], [TOUR1 + 8.6, 0, 330, .435]);
 const DUR = +(TOUR1 + 8.6).toFixed(2);
 function camAt(t) { let i = 0; while (i < CAM.length - 2 && t > CAM[i + 1][0]) i++; const [t0, x0, y0, z0] = CAM[i], [t1, x1, y1, z1] = CAM[i + 1]; const u = ease(lin(t, t0, t1)); return [x0 + (x1 - x0) * u, y0 + (y1 - y0) * u, Math.exp(Math.log(z0) + (Math.log(z1) - Math.log(z0)) * u)]; }
 
+const CAMQ = new URLSearchParams(location.search).get('cam')?.split(',').map(Number) || null;   // 檢查用：?cam=x,y,縮放
 window.DUR = DUR;
 window.render = (t) => {
-  const [cx, cy, z] = camAt(t);
+  const [cx, cy, z] = CAMQ || camAt(t);
   world.setAttribute('transform', `translate(960 540) scale(${z.toFixed(5)}) translate(${(-cx).toFixed(2)} ${(-cy).toFixed(2)})`);
   document.documentElement.style.setProperty('--lw', (Math.pow(z, .65) / z).toFixed(4));
   for (const kk of keys.concat(nav)) { const s = T.keysGo + (kk.row + 1) * .13 + kk.col * .025, u = ein(lin(t, s, s + .75)); kk.g.setAttribute('transform', `translate(0 ${(-u * 70 * rise).toFixed(2)})`); kk.g.setAttribute('opacity', (1 - lin(t, s + .2, s + .75)).toFixed(3)); }
@@ -256,28 +264,30 @@ window.render = (t) => {
   F1.setAttribute('opacity', (1 - lin(t, T.out1, T.out1 + .8)).toFixed(3));
   F2.style.display = t < T.f2 - .05 ? 'none' : '';
   // SIM 卡托退出
-  const se = ease(lin(t, T.sim, T.sim + 1.0)) * (1 - ease(lin(t, T.ex - .4, T.ex + .4)));
-  simG.setAttribute('transform', `translate(${(J.pts.simDir[0] * se).toFixed(2)} ${(J.pts.simDir[1] * se).toFixed(2)})`);
-  { const [ox, oy] = groupOff(7, t); const p = iso(41, -18, 9); simLab.setAttribute('transform', `translate(${(p[0] + J.pts.simDir[0] + ox + 30).toFixed(1)} ${(p[1] + J.pts.simDir[1] + oy - 40).toFixed(1)})`); }
-  // 爆炸：每組平移＋組內分層抬高；主板的屏蔽蓋在巡覽到主板時掀開
-  for (const g of G2) {
-    const s = shareOf(g.index, t), [ox, oy] = groupOff(g.index, t);
-    g.wrap.setAttribute('transform', `translate(${ox.toFixed(2)} ${oy.toFixed(2)})`);
-    for (const L of g.layers) {
-      let dz = L.sub * J.subz * s;
-      let op = 1;
-      if (L.tag === 'lid') { const st = stops[5]; const l = ease(lin(t, st.t + .5, st.t + 1.6)); dz += l * 20; op = 1 - .8 * l; }
-      if (L.tag === 'sim') continue;
-      L.g.setAttribute('transform', `translate(0 ${(-dz * rise).toFixed(2)})`);
-      L.g.setAttribute('opacity', op.toFixed(3));
-    }
+  const se = ease(lin(t, T.sim, T.sim + 1.0));   // 卡托退出後一直留在外面（拆解時跟著主板走）
+  { const [ox, oy] = groupOff(SIMGI, t); const p = iso(30.5, -18, 9); simLab.setAttribute('transform', `translate(${(p[0] + J.pts.simDir[0] + ox + 30).toFixed(1)} ${(p[1] + J.pts.simDir[1] + oy - 40).toFixed(1)})`); }
+  // 爆炸：每個零件跟著自己的組平移＋組內分層抬高；主板的兩塊屏蔽蓋在巡覽到主板時掀開；SIM 卡托退出時在機身後面
+  const a = shA(t), c = shC(t), sb = J.fig2.groups.map((g) => shB(g.index, t));
+  const anyB = sb.some((v) => v > 0);
+  for (const it of IT2) {
+    const [ox, oy] = groupOff(it.g, t);
+    let dz = it.sub * J.subz * c, op = 1, dx = 0, dy = 0;
+    if (it.tag === 'lid') { const st = stops[5]; const l = ease(lin(t, st.t + .5, st.t + 1.6)); dz += l * 20; op = 1 - .8 * l; }
+    if (it.g === 5 && it.sub === 1) { const st = stops[5]; dz += ease(lin(t, st.t + 2.0, st.t + 3.0)) * 20; }   // 通訊板再升高，露出下面應用板的處理器
+    if (it.tag === 'sim') { dx = J.pts.simDir[0] * (se - 1); dy = J.pts.simDir[1] * (se - 1); }
+    it.el.setAttribute('transform', `translate(${(ox + dx).toFixed(2)} ${(oy + dy - dz * rise).toFixed(2)})`);
+    it.el.setAttribute('opacity', op.toFixed(3));
+    it.k = (c > 0 ? it.keys.C + it.lifts.C * c : anyB ? it.keys.B + it.lifts.B * sb[it.g] : it.keys.A + it.lifts.A * a) + (it.tag === 'sim' && se > 0.001 && se < 0.999 ? -1e4 : 0);
   }
+  const sorted = IT2.slice().sort((a, b) => a.k - b.k), sig = sorted.map((it) => it.name).join('|');
+  if (sig !== ORDER2) { ORDER2 = sig; for (const it of sorted) F2.appendChild(it.el); }
   { const pv = lin(t, T.dive1 - .3, T.dive1 + .2) * (1 - lin(t, T.back0 + 1.4, T.back1 + .2)); plateB.setAttribute('opacity', (pv * .9).toFixed(3)); plateT.setAttribute('opacity', (pv * .9).toFixed(3)); }
   setRatio(t); touchFrame(t); reveal(t); revealText(t); placeLabels(t);
 };
 window.TEXTS = (t) => texts.filter((o) => t >= o.t0 + o.dur && t < o.out && +o.tx.getAttribute('opacity') > .9).map((o) => { const b = o.tx.getBoundingClientRect(); return { id: o.id, text: o.s, x0: b.left, y0: b.top, x1: b.right, y1: b.bottom }; }).filter((b) => b.x1 > 0 && b.y1 > 0 && b.x0 < 1920 && b.y0 < 1080 && b.x1 - b.x0 > 2);
 await document.fonts.ready;
-window.render(0);
+window.render(+(new URLSearchParams(location.search).get('t') || 0));   // 檢查用：?t=秒
+if (new URLSearchParams(location.search).get('lines')) document.querySelectorAll('#ink .ln.w3, #ink .ln.w4').forEach((e) => { if (e.closest('[style*="display: none"]')) return; e.classList.add('iso-line'); });   // 檢查用：給 Anatomy 的線端檢查
 window.READY = true;
 </script>
 </body></html>

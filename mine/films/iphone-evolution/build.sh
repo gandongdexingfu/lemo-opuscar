@@ -7,5 +7,5 @@ LIB=${LIB:-$(cd "$HERE/../../.." && pwd)}
 cd "$HERE"
 node geo/build.mjs               # 零件幾何 → parts.json
 cd "$LIB"
-node core/render/video.mjs "$HERE" --fps 24 --workers 4 --size 1080x1920 --out "$HERE/out/video.mp4"
+node core/render/video.mjs "$HERE" --fps 24 --workers 4 --size 1920x1080 --out "$HERE/out/video.mp4"
 ffmpeg -v error -y -i "$HERE/out/video.mp4" -c:v libx264 -crf 24 -preset slow -pix_fmt yuv420p -movflags +faststart "$HERE/out/iphone2007_sample.mp4"
