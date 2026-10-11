@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<title>一帧，走进放映机</title>
+<style>
+@font-face { font-family: SC; font-weight: 300; src: url(fonts/sc300.woff2) format('woff2'); font-display: block; }
+@font-face { font-family: SC; font-weight: 400; src: url(fonts/sc400.woff2) format('woff2'); font-display: block; }
+@font-face { font-family: Mono; font-weight: 400; src: url(fonts/mono400.woff2) format('woff2'); font-display: block; }
+@font-face { font-family: Mono; font-weight: 500; src: url(fonts/mono500.woff2) format('woff2'); font-display: block; }
+html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: #E9ECEC; }
+.full { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; pointer-events: none; }
+#bgD { background: radial-gradient(70% 45% at 50% 40%, #1A2029, #10141A 70%, #0B0E12); }
+#bgL { background: linear-gradient(180deg, #EEF1F4, #E6EAEC 60%, #EEF1F4); }
+#grid { background-image: radial-gradient(var(--grid) 1.6px, transparent 2px); background-size: 40px 40px; }
+#world { position: absolute; left: 0; top: 0; width: 1080px; height: 4000px; transform-origin: 0 0; }
+.stage { position: absolute; }
+[data-hairline] { --hairline-stroke: 2.3; }
+[data-hairline] svg * { transition: none !important; }
+.label { position: absolute; font-family: Mono; font-size: 26px; letter-spacing: .04em; color: var(--dim); white-space: nowrap; }
+.label b { font-weight: 500; color: var(--ink); }
+#heroRead { display: none; } #slideHead { font-size: 30px; } #slideHead i { font-style: normal; font-family: SC; font-weight: 400; font-size: 38px; color: var(--ink); margin-left: 14px; letter-spacing: .06em; }
+#layers { position: absolute; left: 0; width: 1080px; top: 1440px; text-align: center; font-family: SC; font-weight: 400; font-size: 50px; letter-spacing: .1em; }
+#layers span { display: inline-block; margin: 0 6px; }
+#layers .sep { color: var(--lo); margin: 0 2px; }
+#screen { position: absolute; overflow: hidden; border-radius: 6px; background: #0d1013; transform: perspective(1400px) rotateX(5deg); transform-origin: 50% 100%; }
+#screen img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+#screen.off::after { opacity: .25; }
+#screen::after { content: ""; position: absolute; inset: 0; background: radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(0,0,0,.42)); box-shadow: inset 0 0 26px 8px rgba(0,0,0,.35); }
+#courier { position: absolute; left: 0; top: 0; overflow: visible; }
+#courier rect { fill: var(--plate); stroke: var(--signal); stroke-width: 2.3; vector-effect: non-scaling-stroke; }
+#courier .h { fill: none; stroke: var(--edge); }
+.cap { position: absolute; left: 0; width: 1080px; text-align: center; font-family: SC; font-weight: 300; color: var(--ink); letter-spacing: .08em; }
+.cap span { display: inline-block; }
+.s { stop-color: rgb(255 238 214); }
+#url { font-family: Mono; font-weight: 500; color: var(--signal); letter-spacing: .02em; }
+</style>
+</head>
+<body>
+<div class="full" id="bgL"></div>
+<div class="full" id="bgD"></div>
+<div class="full" id="orbs"></div>
+<div class="full" id="grid"></div>
+<div id="world">
+  <div class="label" id="heroHead" style="left:150px; top:480px"><b>FIG 1</b>　一帧的五层</div>
+  <div class="label" id="heroRead" style="right:70px; top:400px"></div>
+  <div class="stage" id="hero" style="left:40px; top:440px; width:1000px; height:800px"></div>
+  <div class="label" id="slideHead" style="left:320px; top:1446px"></div>
+  <div id="screen" style="left:320px; top:1500px; width:440px; height:782px"><img id="film" alt=""></div>
+  <div class="stage" id="tray" style="left:0; top:2640px; width:1080px; height:864px"></div>
+  <svg id="courier" width="1" height="1"><defs><filter id="cglow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur in="SourceAlpha" stdDeviation="6" result="b"/><feFlood flood-color="#2F5BFF" flood-opacity=".55"/><feComposite in2="b" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g id="cg"></g></svg>
+</div>
+<svg class="full" id="beam" viewBox="0 0 1080 1920">
+  <defs>
+    <filter id="bW" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="34"/></filter>
+    <filter id="bM" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="12"/></filter>
+    <filter id="bS" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5"/></filter>
+    <linearGradient id="gHalo" gradientUnits="userSpaceOnUse"><stop offset="0" class="s" style="stop-opacity:.34"/><stop offset=".6" class="s" style="stop-opacity:.09"/><stop offset="1" class="s" style="stop-opacity:.06"/></linearGradient>
+    <linearGradient id="gBody" gradientUnits="userSpaceOnUse"><stop offset="0" class="s" style="stop-opacity:.7"/><stop offset=".45" class="s" style="stop-opacity:.22"/><stop offset="1" class="s" style="stop-opacity:.12"/></linearGradient>
+    <linearGradient id="gCore" gradientUnits="userSpaceOnUse"><stop offset="0" class="s" style="stop-opacity:.95"/><stop offset=".4" class="s" style="stop-opacity:.2"/><stop offset="1" class="s" style="stop-opacity:0"/></linearGradient>
+    <radialGradient id="gSrc"><stop offset="0" style="stop-color:#fff;stop-opacity:1"/><stop offset=".35" class="s" style="stop-opacity:.6"/><stop offset="1" class="s" style="stop-opacity:0"/></radialGradient>
+  </defs>
+  <g id="light" style="mix-blend-mode:screen"><path id="halo" fill="url(#gHalo)" filter="url(#bW)"/><path id="body" fill="url(#gBody)" filter="url(#bM)"/><path id="core" fill="url(#gCore)" filter="url(#bS)"/><circle id="src" r="30" fill="url(#gSrc)"/></g>
+  <circle id="echo" r="9" fill="#2F5BFF" style="filter: drop-shadow(0 0 14px rgba(47,91,255,.9))"/>
+</svg>
+<canvas class="full" id="dust" width="1080" height="1920"></canvas>
+<div class="full" id="caps">
+  <div class="cap" id="c1" style="top:250px; font-size:84px"></div>
+  <div class="cap" id="c2" style="top:262px; font-size:66px"></div>
+  <div id="layers"></div>
+  <div class="cap" id="t1" style="top:300px; font-size:104px"></div>
+  <div class="cap" id="t2" style="top:470px; font-size:44px"><span id="url"></span></div>
+</div>
+
+<script>
+// ===== 虛擬時鐘：網站的 hairline 引擎靠 requestAnimationFrame 和 performance.now 走，這裡把它們換成由 render(t) 推進的時間 =====
+// 這樣每一幀都是確定的：同一個 t 永遠畫出同一個畫面
+(() => {
+  // 不動全域的 requestAnimationFrame（渲染工具自己要用），只把假的時鐘「傳進」引擎和圖檔的函式範圍
+  let VT = 0, rid = 0, raf = [], timers = [];
+  const fake = {
+    requestAnimationFrame: cb => { raf.push([++rid, cb]); return rid; },
+    cancelAnimationFrame: id => { raf = raf.filter(r => r[0] !== id); },
+    setTimeout: (cb, ms = 0) => { timers.push([VT + ms, ++rid, cb]); return rid; },
+    clearTimeout: id => { timers = timers.filter(x => x[1] !== id); },
+    performance: { now: () => VT },
+    // 引擎只在圖「看得見」時才動：直接告訴它看得見
+    IntersectionObserver: class { constructor(cb) { this.cb = cb; } observe(el) { this.cb([{ target: el, isIntersecting: true }]); } unobserve() {} disconnect() {} },
+  };
+  const names = Object.keys(fake);
+  window.CLOCK = {
+    get now() { return VT; },
+    reset() { VT = 0; raf = []; timers = []; },
+    step(ms) {
+      VT = ms;
+      const due = timers.filter(x => x[0] <= VT).sort((a, b) => a[0] - b[0]); timers = timers.filter(x => x[0] > VT);
+      due.forEach(x => x[2]());
+      const q = raf; raf = []; q.forEach(r => r[1](VT));
+    },
+    // 在假時鐘下執行一段原始碼；ret 是要拿回來的變數名
+    run(src, ret) { return new Function(...names, src + (ret ? `\n;return ${ret};` : ''))(...names.map(k => fake[k])); },
+  };
+})();
+window.FIGS = {};
+window.hairline = fig => { window.FIGS[fig.name] = fig; };
+window.BIN = [['小麻雀追袋记', 33, 'sparrow'], ['光的演变', 92, 'lamp']];
+</script>
+<script>
+const W = 1080, H = 1920, FPS = 24;
+window.DUR = 27.0;
+const BEAT = 0.6;
+// ===== 小工具 =====
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, k) => a + (b - a) * k;
+const ease = k => { k = clamp(k); return k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; };   // 進出都緩
+const out3 = k => 1 - Math.pow(1 - clamp(k), 3);
+const inn2 = k => clamp(k) ** 2;
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const hash = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const mix = (a, b, k) => { const A = hex(a), B = hex(b); return '#' + A.map((v, i) => Math.round(lerp(v, B[i], k)).toString(16).padStart(2, '0')).join(''); };
+const $ = id => document.getElementById(id);
+
+// ===== 配色：白天（網站淺色）↔ 放映室（深色） =====
+const PAL = {
+  L: { ink: '#1D2125', dim: '#5F6970', plate: '#F7F8F8', signal: '#2F5BFF', edge: '#7E8990', mid: '#AEB7BC', lo: '#D3D9DC', grid: '#9AA4AA' },
+  D: { ink: '#E6EAEC', dim: '#8D979E', plate: '#1C2126', signal: '#7C98FF', edge: '#7C878F', mid: '#4A545C', lo: '#2E363D', grid: '#3A434A' },
+};
+function theme(dk) {
+  const r = document.documentElement.style;
+  for (const k in PAL.L) r.setProperty('--' + k, mix(PAL.L[k], PAL.D[k], dk));
+  for (const [hl, k] of [['plate', 'plate'], ['hi', 'signal'], ['edge', 'edge'], ['mid', 'mid'], ['lo', 'lo']]) r.setProperty('--hairline-' + hl, mix(PAL.L[k], PAL.D[k], dk));
+  r.setProperty('--grid', mix('#9AA4AA', '#3A434A', dk) + (dk > .5 ? '55' : '66'));
+  $('bgD').style.opacity = dk;
+}
+
+// ===== 時間表：所有畫面卡點與聲音事件都從這裡來（mix.py 讀 window.EV） =====
+const T = {
+  dot: 0.0, draw0: 0.25, draw1: 1.35, burst: 1.5,
+  layers: [2.4, 3.6, 4.8, 6.0, 7.2],                     // 每兩拍指一層：代码、墨线、淡彩、照片、成片
+  lift: 7.8, land: 9.3, click: 9.9, ignite: 10.2,
+  spin0: 15.0, spin1: 15.9, swap: 16.2, hush0: 20.4, hush1: 21.6,
+  title: 23.0, url: 23.6, close0: 25.6, close1: 26.4,
+  dark0: 8.45, dark1: 9.15, day0: 21.8, day1: 23.8,
+};
+const LAYERS = ['code', 'ink', 'wash', 'photo', 'frame'];
+const ZH = { code: '代码', ink: '墨线', wash: '淡彩', photo: '照片', frame: '成片' };
+
+// ===== 鏡頭：world 座標的中心 (x, y) 與縮放 s；每一段之間緩動過渡 =====
+const CAM = [
+  [0.00, 0, 0, 6.5],        // 0：貼著游標那個藍點（x, y 在 reset 時填入）
+  [0.30, 0, 0, 6.5],
+  [2.20, 540, 850, 1.26, 'out'],   // 拉出到整幀：一開始快、最後慢慢停
+  [7.20, 540, 870, 1.38],   // 指層時緩推
+  [9.40, 540, 2440, 1.06],  // 降鏡跟著飛下來
+  [10.2, 540, 2440, 1.06],
+  [14.8, 540, 2110, 1.24],  // 點亮後上搖推近幕
+  [15.9, 600, 3020, 1.55],  // 拖轉盤：快推
+  [16.6, 560, 2480, 1.12],
+  [20.4, 540, 2360, 1.16],
+  [21.6, 540, 2360, 1.16],
+  [24.6, 540, 2050, 0.60],  // 大拉遠
+  [27.0, 540, 2030, 0.58],
+];
+function cam(t) {
+  let i = 0; while (i < CAM.length - 2 && t >= CAM[i + 1][0]) i++;
+  const [t0, x0, y0, s0] = CAM[i], [t1, x1, y1, s1, how] = CAM[i + 1], u = seg(t, t0, t1), k = how === 'out' ? 1 - Math.pow(1 - u, 4) : ease(u);
+  // 縮放用對數插值，推拉的速度才均勻
+  return [lerp(x0, x1, k), lerp(y0, y1, k), Math.exp(lerp(Math.log(s0), Math.log(s1), k))];
+}
+let CUR = [0, 0, 1];
+function applyCam(t) {
+  const [x, y, s] = CUR = cam(t);
+  $('world').style.transform = `translate(${W / 2 - x * s}px, ${H / 2 - y * s}px) scale(${s})`;
+}
+// 畫面上的點 → world 座標
+const toWorld = (px, py) => [(px - (W / 2 - CUR[0] * CUR[2])) / CUR[2], (py - (H / 2 - CUR[1] * CUR[2])) / CUR[2]];
+const center = el => { const r = el.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2, r.width, r.height]; };
+
+// ===== 掛圖：和網站一樣用 hairline 的 mount，讀數接住後翻成簡體 =====
+function mountFig(host, name, value) {
+  const fig = FIGS[name]; HL.inject(document);
+  host.setAttribute('data-hairline', name);
+  const svg = HL.mk('svg', { viewBox: '0 0 400 320', 'aria-hidden': 'true' }, host);
+  let text = '';
+  const read = { get textContent() { return text; }, set textContent(v) { text = v == null ? '' : String(v); } };
+  const handle = fig.mount({ stage: host, svg, read }, value ?? fig.range[1]);
+  return { host, svg, handle, get text() { return text; } };
+}
+// 看不見的手：在圖的 400 × 320 座標裡發指標事件
+function hand(host, type, p, buttons = 0) {
+  const r = host.getBoundingClientRect();
+  host.dispatchEvent(new PointerEvent(type, { pointerType: 'mouse', pointerId: 7, bubbles: true, buttons,
+    clientX: r.left + p[0] / 400 * r.width, clientY: r.top + p[1] / 320 * r.height }));
+}
+// 掃一遍：每個讀數名字落在圖上哪裡（取最靠中心的取樣點）
+function anchors(F, re) {
+  const acc = {};
+  for (let y = 8; y < 320; y += 6) for (let x = 8; x < 400; x += 6) {
+    hand(F.host, 'pointermove', [x, y]); const m = re.exec(F.text); if (!m) continue;
+    (acc[m[1]] ||= []).push([x, y]);
+  }
+  hand(F.host, 'pointerleave', [-9, -9]);
+  const out = {};
+  for (const k in acc) { const ps = acc[k], cx = ps.reduce((a, p) => a + p[0], 0) / ps.length, cy = ps.reduce((a, p) => a + p[1], 0) / ps.length;
+    out[k] = ps.reduce((b, p) => Math.hypot(p[0] - cx, p[1] - cy) < Math.hypot(b[0] - cx, b[1] - cy) ? p : b); }
+  return out;
+}
+
+// ===== 手的劇本：每一段 [t0, t1, from, to, buttons]；from/to 是點或錨點名 =====
+let HERO, TRAY, AH, AT, SCRIPT, hidden = false;
+function resolve(p, A) { return typeof p === 'string' ? A[p] : p; }
+function buildScript() {
+  const L = T.layers, go = 0.34;
+  SCRIPT = {
+    hero: [
+      ['move', T.burst, T.burst + 0.42, [70, 170], [336, 150]],                 // 一掃：五層爆開
+      ['move', L[0] - go, L[0], [336, 150], 'code'],
+      ...LAYERS.slice(1).map((n, i) => ['move', L[i + 1] - go, L[i + 1], LAYERS[i], n]),
+      ['hold', L[4], T.lift + 0.4, 'frame'],
+      ['leave', T.lift + 0.4],
+    ],
+    tray: [
+      ['move', T.click - 0.3, T.click, [330, 300], 'read'],
+      ['hold', T.click, T.spin0, 'read'],
+      ['down', T.spin0, 'read'],
+      ['drag', T.spin0 + 0.02, T.spin1, 'read', -350],
+      ['up', T.spin1 + 0.08],
+      ['leave', T.swap + 0.3],
+    ],
+  };
+}
+let fired = new Set();
+function drive(F, list, A, t, tPrev) {
+  list.forEach((s, i) => {
+    const [kind, t0, t1] = s, key = F.host.id + i;
+    if (kind === 'move' && t >= t0 && tPrev < t1 + 1e-6) { const a = resolve(s[3], A), b = resolve(s[4], A), k = ease(seg(t, t0, t1)); hand(F.host, 'pointermove', [lerp(a[0], b[0], k), lerp(a[1], b[1], k)]); }
+    if (kind === 'hold' && t >= t0 && t <= t1) hand(F.host, 'pointermove', resolve(s[3], A));
+    if (kind === 'down' && t >= t0 && !fired.has(key)) { fired.add(key); hand(F.host, 'pointerdown', resolve(s[2], A), 1); }
+    if (kind === 'drag' && t >= t0 && tPrev < t1 + 1e-6) { const a = resolve(s[3], A), k = ease(seg(t, t0, t1)); hand(F.host, 'pointermove', [a[0] + s[4] * k, a[1]], 1); }
+    if (kind === 'up' && t >= t0 && !fired.has(key)) { fired.add(key); const d = SCRIPT.tray.find(x => x[0] === 'drag'); const a = resolve(d[3], A); hand(F.host, 'pointermove', [a[0] + d[4], a[1]], 0); }
+    if (kind === 'leave' && t >= t0 && !fired.has(key)) { fired.add(key); hand(F.host, 'pointerleave', [-9, -9]); }
+  });
+}
+
+// ===== 從頭建好兩張圖（往回跳或第一幀時呼叫） =====
+let simT = -1;
+function reset() {
+  [HERO, TRAY].forEach(F => { if (F) { F.handle.destroy(); F.host.replaceChildren(); } });
+  CLOCK.reset(); fired = new Set(); hidden = false;
+  applyCam(5);                                      // 掃錨點時兩張圖都要有正常大小
+  HERO = mountFig($('hero'), 'frame', 44);
+  TRAY = mountFig($('tray'), 'carousel', 4);
+  TRAY.handle.set(8);                               // 拖滿 350 單位＝轉 7 格（一圈多一格）
+  AH = anchors(HERO, /^0\d · (\w+)$/);
+  AT = { read: anchors(TRAY, /^0(1) · /)['1'] };
+  AT.read = [AT.read[0], AT.read[1] + 8];
+  CLOCK.step(0);
+  buildScript();
+  // 開場的鏡頭對準游標藍點
+  applyCam(5); const d = HERO.svg.querySelector('circle.dot') || HERO.svg.querySelector('[class~="dot"]');
+  const [px, py] = center(d), [wx, wy] = toWorld(px, py);
+  CAM[0][1] = CAM[1][1] = wx; CAM[0][2] = CAM[1][2] = wy;
+  simT = 0;
+}
+// 從 simT 推進到 t：每 1/60 秒一步，手的事件、引擎的彈簧都跟著走
+function advance(t) {
+  while (simT < t - 1e-9) {
+    const prev = simT, now = Math.min(t, simT + 1 / 60);
+    applyCam(now);
+    drive(HERO, SCRIPT.hero, AH, now, prev);
+    drive(TRAY, SCRIPT.tray, AT, now, prev);
+    CLOCK.step(now * 1000);
+    simT = now;
+  }
+}
+</script>
+<script>
+// ===== 每一幀：推進引擎，再畫引擎以外的東西（光束、灰塵、幕、飛行的那一幀、字） =====
+const FILM = { sp: { dir: 'frames/taiwan-sparrow', n: 135, t0: T.ignite }, le: { dir: 'frames/light-evolution', n: 149, t0: T.swap } };
+const imgs = {};
+function heroPane() {  // 成片那一層（最前面一層）：最後 26 個元素
+  const g = HERO.svg.firstElementChild; const kids = [...g.children]; return kids.slice(kids.length - 26);
+}
+function drawOn(t) {
+  // 開場：從藍點長出線稿（每條線用 pathLength=1 的虛線慢慢畫出），面再淡入
+  const p = out3(seg(t, T.draw0, T.draw1)), on = t < T.draw1 + 0.05;
+  HERO.svg.querySelectorAll('path').forEach((el, i) => {
+    if (!on) { if (el.dataset.d) { el.removeAttribute('pathLength'); el.style.strokeDasharray = el.style.strokeDashoffset = el.style.fillOpacity = ''; delete el.dataset.d; } return; }
+    el.dataset.d = 1; el.setAttribute('pathLength', 1);
+    const q = clamp(p * 1.25 - (i % 9) * 0.03);
+    el.style.strokeDasharray = '1 1'; el.style.strokeDashoffset = 1 - q; el.style.fillOpacity = q * q;
+  });
+}
+function screenAt(t) {
+  const img = $('film'), sc = $('screen');
+  let src = '', dim = 0;
+  if (t >= T.ignite && t < T.swap) { const f = Math.min(FILM.sp.n, 1 + Math.floor((t - FILM.sp.t0) * FPS)); src = `${FILM.sp.dir}/${String(f).padStart(3, '0')}.jpg`; }
+  if (t >= T.swap) { const f = Math.min(FILM.le.n, 1 + Math.floor((t - FILM.le.t0) * FPS)); src = `${FILM.le.dir}/${String(f).padStart(3, '0')}.jpg`; }
+  if (src && img.getAttribute('src') !== src) img.setAttribute('src', src);
+  img.style.opacity = (src ? 1 : 0) * (1 - seg(t, T.close0, T.close1));
+  // 亮度：點亮時一閃；轉盤轉的時候暗；換片時再一閃；結尾慢慢暗下
+  let b = t < T.ignite ? 0 : 1;
+  const fl = (t0) => { const k = (t - t0) / 0.42; return k < 0 || k > 1 ? 1 : [0.5, 1.18, 0.8, 1.06, 1][Math.min(4, Math.floor(k * 5))]; };
+  b *= fl(T.ignite) * fl(T.swap);
+  if (t > T.spin0 + 0.15 && t < T.swap) b *= 0.14;
+  b *= 1 - seg(t, T.close0, T.close1);
+  img.style.filter = `brightness(${(t < T.ignite ? 1 : b).toFixed(3)})`;
+  sc.classList.toggle('off', t > T.close1 || t > T.day0 + 1 && t > T.close0 + 0.6);
+  // 沒點亮的幕：暗房裡是一塊深灰；天亮後是一塊淺灰的布
+  sc.style.background = mix(mix('#D5DBDE', '#20262D', Math.max(seg(t, T.dark0, T.dark1) - seg(t, T.day0, T.day1), 0)), '#0d1013', t >= T.ignite && t < T.close1 ? 1 - seg(t, T.close0, T.close1) : 0);
+  sc.style.boxShadow = `0 0 0 1px rgba(255,255,255,${0.06 + 0.04 * (1 - b)}), 0 0 ${120 * b}px ${10 * b}px rgba(255,236,210,${(0.32 * b).toFixed(3)})`;
+  return b;
+}
+function beamAt(t, sb) {
+  const L = $('light'), dot = TRAY.svg.querySelector('[class~="dot"]');
+  const on = t >= T.ignite ? 1 : 0, fade = 1 - seg(t, T.close0 - 0.2, T.close1);
+  let fl = 1; if (t >= T.ignite) { const k = Math.floor(t / 0.09); fl = .92 + .08 * hash(k); }
+  const flash = t >= T.ignite ? 1 + 0.6 * Math.exp(-(t - T.ignite) * 6) : 0;
+  const dim = t > T.spin0 + 0.15 && t < T.swap ? 0.35 : 1;
+  const a = on * fl * fade * Math.min(1.25, flash) * dim;
+  L.style.opacity = a.toFixed(3);
+  $('dust').style.opacity = (on * fade * dim).toFixed(3);
+  // 結尾：光收回去，只剩一個藍點（和開場的游標同一個點）
+  const ek = seg(t, T.close1 - 0.3, T.close1 + 0.2), echo = $('echo');
+  echo.style.opacity = (ek * (1 - 0.25 * Math.max(0, Math.sin((t - T.close1) * 5)))).toFixed(3);
+  if (dot) { const [ex, ey] = center(dot), tr0 = $('tray').getBoundingClientRect(); echo.setAttribute('cx', ex); echo.setAttribute('cy', ey + tr0.height * 0.075); echo.setAttribute('r', 6 + 6 * out3(seg(t, T.close1 - 0.3, T.close1 + 0.3))); }
+  if (!a || !dot) return null;
+  const [dx, dy] = center(dot), tr = $('tray').getBoundingClientRect();
+  const ox = dx, oy = dy + tr.height * 0.075;                  // 鏡頭：閱讀位置那張幻燈片的中心
+  const r = $('screen').getBoundingClientRect();
+  // 結尾：光束收細，最後只剩一個點
+  const nar = seg(t, T.close0, T.close1), sh = (x, y) => [lerp(x, ox, nar), lerp(y, oy, nar)];
+  const c = [[r.left, r.top], [r.right, r.top], [r.right, r.bottom], [r.left, r.bottom]].map(([x, y]) => sh(x, y));
+  const mx = (c[0][0] + c[2][0]) / 2, my = (c[0][1] + c[2][1]) / 2;
+  ['gHalo', 'gBody', 'gCore'].forEach(id => { const g = $(id); g.setAttribute('x1', ox); g.setAttribute('y1', oy); g.setAttribute('x2', mx); g.setAttribute('y2', my); });
+  // 光錐：光源和幕的左右兩條邊連起來（光從下方斜照上去）
+  const cone = (spread, a0) => `M${ox - a0} ${oy}L${c[3][0] - spread} ${c[3][1] + spread * .2}L${c[0][0] - spread} ${c[0][1] - spread}L${c[1][0] + spread} ${c[1][1] - spread}L${c[2][0] + spread} ${c[2][1] + spread * .2}L${ox + a0} ${oy}Z`;
+  $('halo').setAttribute('d', cone(60, 26)); $('body').setAttribute('d', cone(4, 8));
+  $('core').setAttribute('d', `M${ox - 3} ${oy}L${lerp(c[3][0], mx, .55)} ${lerp(c[3][1], my, .3)}L${lerp(c[0][0], mx, .55)} ${lerp(c[0][1], my, .55)}L${lerp(c[1][0], mx, .55)} ${lerp(c[1][1], my, .55)}L${lerp(c[2][0], mx, .55)} ${lerp(c[2][1], my, .3)}L${ox + 3} ${oy}Z`);
+  $('src').setAttribute('cx', ox); $('src').setAttribute('cy', oy); $('src').setAttribute('r', 30 + 14 * Math.exp(-(t - T.ignite) * 4));
+  return { ox, oy, c, mx, my };
+}
+const MOTES = Array.from({ length: 110 }, (_, i) => ({ s: hash(i), w: hash(i + 99) * 2 - 1, v: .03 + hash(i + 7) * .05, ph: hash(i + 3) * 6.28, r: .8 + hash(i + 11) * 2.2 }));
+function dustAt(t, B) {
+  const cv = $('dust'), x = cv.getContext('2d'); x.clearRect(0, 0, W, H);
+  if (!B) return;
+  const col = '255 238 214';
+  MOTES.forEach(q => {
+    const s = (q.s + q.v * (t - T.ignite)) % 1, ph = q.ph + t * 1.8, ww = q.w + Math.sin(ph) * .06;
+    const ex = lerp(B.c[3][0], B.c[2][0], (ww + 1) / 2), ey = lerp(B.c[3][1], B.c[2][1], (ww + 1) / 2);   // 幕下緣上對應的點
+    const X = lerp(B.ox, lerp(ex, B.mx, .3), s), Y = lerp(B.oy, lerp(ey, B.my, .3), s);
+    const a = (1 - Math.abs(ww) * .7) * Math.sin(s * Math.PI) * (.35 + .35 * Math.sin(ph * 2.3));
+    x.fillStyle = `rgb(${col} / ${Math.max(0, a).toFixed(3)})`; x.beginPath(); x.arc(X, Y, q.r, 0, 6.283); x.fill();
+  });
+}
+// 飛行的那一幀：從主圖的「成片」層起飛，沿弧線落進轉盤閱讀位置那張幻燈片
+let FLY = null;
+function courierAt(t) {
+  const svg = $('courier'), g = $('cg');
+  if (t < T.lift || t > T.land + 0.25) { svg.style.display = 'none'; return; }
+  if (!FLY) {
+    // 起點：成片那一層的面；終點：閱讀位置的幻燈片
+    const face = heroPane()[2], r = face.getBoundingClientRect();
+    const a = toWorld(r.left + r.width / 2, r.top + r.height / 2), sa = r.height / CUR[2];
+    FLY = { a, sa };
+    g.innerHTML = '<rect x="-27" y="-48" width="54" height="96" rx="5"/><rect class="h" x="-17" y="-43" width="34" height="86" rx="2"/>' +
+      Array.from({ length: 9 }, (_, k) => `<rect class="h" x="-25" y="${-40 + k * 9.6}" width="4" height="5" rx="1"/><rect class="h" x="21" y="${-40 + k * 9.6}" width="4" height="5" rx="1"/>`).join('');
+  }
+  const [X, Y, k] = flyAt(t), sc = lerp(FLY.sa, 60, k) / 96, rot = -18 * Math.sin(k * Math.PI);
+  g.setAttribute('filter', 'url(#cglow)');
+  svg.style.display = ''; svg.style.left = X + 'px'; svg.style.top = Y + 'px';
+  g.setAttribute('transform', `rotate(${rot}) scale(${sc})`);
+  svg.style.opacity = 1 - seg(t, T.land, T.land + 0.25);
+}
+function flyAt(t) {
+  const dot = TRAY.svg.querySelector('[class~="dot"]'), [dx, dy] = center(dot), tr = $('tray').getBoundingClientRect();
+  const b = toWorld(dx, dy + tr.height * 0.075);
+  const k = ease(seg(t, T.lift, T.land)), cx = FLY.a[0] - 260, cy = lerp(FLY.a[1], b[1], .5);
+  return [(1 - k) ** 2 * FLY.a[0] + 2 * (1 - k) * k * cx + k * k * b[0], (1 - k) ** 2 * FLY.a[1] + 2 * (1 - k) * k * cy + k * k * b[1], k];
+}
+// 字：逐字由模糊、略低處浮上來；退場整行淡出
+function chars(el, text, t, tin, tout, step = 0.07) {
+  if (el.dataset.t !== text) { el.dataset.t = text; el.innerHTML = [...text].map(c => `<span>${c === ' ' ? '&nbsp;' : c}</span>`).join(''); }
+  const o = 1 - seg(t, tout, tout + 0.35);
+  [...el.children].forEach((s, i) => { const k = out3(seg(t, tin + i * step, tin + i * step + 0.55)); s.style.opacity = (k * o).toFixed(3); s.style.filter = `blur(${((1 - k) * 14).toFixed(1)}px)`; s.style.transform = `translateY(${((1 - k) * 22).toFixed(1)}px)`; });
+  el.style.display = t < tin || t > tout + 0.4 ? 'none' : '';
+}
+const CAPS = [
+  ['c1', '一帧画面', 0.9, 3.85],
+  ['c2', '每一帧，都由代码画成', 4.0, 8.1],
+  ['t1', '感动的幸福', T.title, 30],
+];
+function textsAt(t) {
+  CAPS.forEach(([id, s, a, b]) => chars($(id), s, t, a, b));
+  const u = $('url'), uk = out3(seg(t, T.url, T.url + 0.9));
+  u.textContent = 'gandongdexingfu.github.io'.slice(0, Math.round(uk * 25));   // 網址逐字打出來（等寬字，像代碼）
+  u.style.opacity = t < T.url ? 0 : 1;
+  // 五層的名字排成一行：正在指的那層亮訊號藍，指過的留墨色，還沒到的淡
+  const lk = T.layers.filter(x => t >= x).length - 1, la = seg(t, T.layers[0] - 0.5, T.layers[0]) * (1 - seg(t, T.lift, T.lift + 0.5));
+  $('layers').innerHTML = LAYERS.map((n, i) => `<span style="color:${i === lk ? 'var(--signal)' : i < lk ? 'var(--ink)' : 'var(--edge)'}">${ZH[n]}</span>`).join('<span class="sep">·</span>');
+  $('layers').style.opacity = la.toFixed(3);
+  // 主圖的讀數（簡體），和幻燈片的標籤
+  const m = /^0(\d) · (\w+)$/.exec(HERO.text);
+  $('heroRead').innerHTML = m ? `<b>0${m[1]} · ${ZH[m[2]]}</b> ${m[2]}` : HERO.text.startsWith('gap') ? `展开 ${HERO.text.slice(4)}` : '';
+  const heroA = 1 - seg(t, T.lift, T.lift + 0.6);
+  $('heroHead').style.opacity = $('heroRead').style.opacity = (seg(t, 1.6, 2.2) * heroA).toFixed(3);
+  const sl = t >= T.swap ? '<b>SLIDE 02</b>　光的演变' : '<b>SLIDE 01</b>　小麻雀追袋记';
+  $('slideHead').innerHTML = sl.replace(/　(.+)$/, '<i>$1</i>');
+  $('slideHead').style.opacity = (t < T.ignite ? 0 : (t > T.spin0 && t < T.swap + 0.3 ? 0.25 : 1) * (1 - seg(t, 22, 23))).toFixed(3);
+}
+window.TEXTS = t => {
+  render(t); const out = [];
+  CAPS.forEach(([id, s, a, b]) => { if (t >= a && t <= b) { const r = $(id).getBoundingClientRect(); out.push({ id, text: s, x0: 0, y0: r.top, x1: W, y1: r.bottom }); } });
+  if (t >= T.layers[0] && t <= T.lift) out.push({ id: 'layers', text: '代码·墨线·淡彩·照片·成片', x0: 0, y0: 1440, x1: W, y1: 1510 });
+  if (t >= T.url) out.push({ id: 'url', text: 'gandongdexingfu.github.io', x0: 0, y0: 600, x1: W, y1: 660 });
+  return out;
+};
+function orbs(t) {
+  const a = 18 + 6 * Math.sin(t * .23), b = 70 + 5 * Math.cos(t * .19);
+  $('orbs').style.background = `radial-gradient(52% 26% at ${a}% 20%, rgba(47,91,255,.16), transparent 70%), radial-gradient(48% 24% at ${b}% 62%, rgba(255,190,140,.18), transparent 70%), radial-gradient(44% 22% at 40% 92%, rgba(80,200,190,.12), transparent 70%)`;
+}
+// 開場鏡頭跟著游標藍點（它會隨五層展開移動）
+function aimDot() {
+  const d = HERO.svg.querySelector('[class~="dot"]'); if (!d) return;
+  const [px, py] = center(d), [wx, wy] = toWorld(px, py);
+  CAM[0][1] = CAM[1][1] = wx; CAM[0][2] = CAM[1][2] = wy;
+}
+window.render = t => {
+  if (simT < 0 || t < simT - 1e-6) { reset(); FLY = null; }
+  advance(t);
+  applyCam(t); if (t < 2.2) { aimDot(); applyCam(t); aimDot(); applyCam(t); }
+  const dk = Math.max(ease(seg(t, T.dark0, T.dark1)) - ease(seg(t, T.day0, T.day1)), 0);
+  theme(dk); orbs(t);
+  $('orbs').style.opacity = 1 - dk * .7;
+  drawOn(t);
+  // 開場之前只有藍點：其餘線稿藏起來；成片那一層起飛後從主圖上拿掉
+  HERO.svg.style.visibility = t < T.draw0 ? 'hidden' : '';
+  const dotOnly = t < T.draw0; $('hero').style.setProperty('--x', 0);
+  if (dotOnly) { HERO.svg.style.visibility = 'visible'; HERO.svg.querySelectorAll('path').forEach(p => p.style.opacity = 0); } else HERO.svg.querySelectorAll('path').forEach(p => { if (p.style.opacity === '0') p.style.opacity = ''; });
+  const gone = t >= T.lift; heroPane().forEach(el => el.style.visibility = gone ? 'hidden' : '');
+  if (t < T.lift) FLY = null;
+  // 主圖在降鏡時淡出，轉盤在暗下來時浮現
+  $('hero').style.opacity = (1 - seg(t, T.lift + 0.2, T.land)).toFixed(3);
+  $('tray').style.opacity = seg(t, T.lift, T.lift + 1.0).toFixed(3);
+  $('screen').style.opacity = seg(t, T.lift + 0.6, T.land).toFixed(3);
+  const b = screenAt(t);
+  const B = beamAt(t, b);
+  dustAt(t, B);
+  courierAt(t);
+  // 降鏡：飛行途中鏡頭跟著那一幀走（它一直留在畫面中間偏上）
+  if (FLY && t > T.lift && t < T.land + 0.4) {
+    const [, Y] = flyAt(t), w = Math.sin(Math.PI * seg(t, T.lift, T.land + 0.4));
+    const [cx, cy, cs] = CUR; const want = Y + 180;
+    $('world').style.transform = `translate(${W / 2 - cx * cs}px, ${H / 2 - lerp(cy, want, w * 0.85) * cs}px) scale(${cs})`;
+    CUR = [cx, lerp(cy, want, w * 0.85), cs]; courierAt(t);
+  }
+  textsAt(t);
+};
+// ===== 事件（給 mix.py 對齊聲音） =====
+window.EV = [
+  { t: T.dot, type: 'ping' }, { t: T.draw0, type: 'draw' }, { t: T.burst, type: 'burst' },
+  ...T.layers.map((t, i) => ({ t, type: 'layer', i })),
+  { t: T.lift, type: 'whoosh' }, { t: T.land, type: 'land' }, { t: T.click, type: 'click' }, { t: T.ignite, type: 'ignite' },
+  { t: T.spin0, type: 'grab' }, { t: T.spin0, type: 'spin', t1: T.spin1 }, { t: T.swap, type: 'swap' },
+  { t: T.hush0, type: 'hush' }, { t: T.title, type: 'title' }, { t: T.url, type: 'type', t1: T.url + 0.9 }, { t: T.close0, type: 'close' }, { t: T.close1, type: 'end' },
+];
+window.TL = { T, BEAT };
+// ===== 載入：兩張圖檔各自放進自己的函式範圍（它們都在最外層宣告 const { Cam, … } = HL） =====
+(async () => {
+  window.HL = CLOCK.run(await (await fetch('hl/kernel.js')).text(), 'HL');
+  for (const f of ['frame', 'carousel']) CLOCK.run(await (await fetch(`hl/${f}.js`)).text());
+  // 幕上兩段片的每一張圖先載好
+  const all = [];
+  for (const k in FILM) for (let i = 1; i <= FILM[k].n; i++) { const im = new Image(); im.src = `${FILM[k].dir}/${String(i).padStart(3, '0')}.jpg`; all.push(im.decode().catch(() => {})); }
+  await Promise.all(all); await document.fonts.ready;
+  await Promise.all([...document.fonts].map(f => f.load()));
+  render(0);
+  window.READY = true;
+})();
+</script>
+</body>
+</html>

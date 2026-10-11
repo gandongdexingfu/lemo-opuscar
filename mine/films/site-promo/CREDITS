@@ -1,0 +1,13 @@
+網站宣傳片「一帧，走进放映机」· CREDITS
+
+畫面
+- hairline 線稿引擎 kernel.js：github.com/lucasmarkes/hairline（MIT，見 hl/LICENSE），原封不動；frame.js、carousel.js 是作品網站自己畫的圖。
+- 幕上的兩段影片：用戶自己的作品《小麻雀追袋記》《光的演變》（gandongdexingfu.github.io）。
+
+字體（SIL Open Font License 1.1，Google Fonts，只取用到的字）
+- Noto Sans SC（Google）
+- IBM Plex Mono（IBM）
+
+音樂（score.py 自己編曲，用 core/audio/sampler.py 演奏）
+Samples (CC0): FreePats project (freepats.zenvoid.org), Versilian Community Sample Library (Versilian Studios)
+音效與環境聲：全部用 numpy 合成（mix.py、core/audio/sfx.py）。
