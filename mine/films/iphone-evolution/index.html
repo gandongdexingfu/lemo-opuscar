@@ -1,0 +1,294 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:#F5F5F2}
+svg{display:block}
+:root{--lw:1;--blue:#2F5BFF}
+.f{fill:#F5F5F2}
+.sh{opacity:var(--q,1)}
+.sh[data-s="0"]{fill:#D6D6D2}.sh[data-s="1"]{fill:#E0E0DC}.sh[data-s="2"]{fill:#E9E9E5}.sh[data-s="3"]{fill:#F0F0ED}
+.tp{fill:color-mix(in srgb,#E8EDFF calc(var(--lit,0)*100%),#FCFCFB);opacity:var(--q,1)}
+.halo{fill:#7d7d74;opacity:calc(var(--q,1)*.24);filter:blur(9px);transform:translateY(9px)}
+.ln{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1 1;stroke-dashoffset:calc(1 - var(--p,1))}
+.w1{stroke:color-mix(in srgb,var(--blue) calc(var(--lit,0)*100%),#26262A);stroke-width:calc(var(--lw)*1.9px)}
+.w2{stroke:color-mix(in srgb,var(--blue) calc(var(--lit,0)*85%),#3A3A40);stroke-width:calc(var(--lw)*1.25px)}
+.w3{stroke:#8A8A8F;stroke-width:calc(var(--lw)*1.0px)}
+.w4{stroke:#B2B2B6;stroke-width:calc(var(--lw)*.8px)}
+.hid{fill:none;stroke:#8A8A8F;stroke-width:calc(var(--lw)*1.0px);stroke-dasharray:6 5;opacity:var(--q,1)}
+.dt circle{fill:#3A3A40;opacity:calc(var(--q,1)*.7)}
+.et{fill:#55555A;font-family:'IBM Plex Mono';font-weight:500;opacity:var(--q,1)}
+.cap{font-family:'Noto Sans SC';font-weight:500;fill:#1A1A1E}
+.cap2{font-family:'IBM Plex Mono','Noto Sans SC';font-weight:400;fill:#55555A}
+.big{font-family:'IBM Plex Mono';font-weight:500;fill:var(--blue)}
+.lab-name{font-family:'Noto Sans SC';font-weight:500;fill:#1A1A1E}
+.lab-sub{font-family:'IBM Plex Mono','Noto Sans SC';font-weight:400;fill:#5A5A60}
+.lab-num{font-family:'IBM Plex Mono';font-weight:500;fill:var(--blue)}
+.dimt{font-family:'IBM Plex Mono';font-weight:400;fill:#3A3A40}
+.lead{fill:none;stroke:#9A9AA0;stroke-width:calc(var(--lw)*1.1px);stroke-dasharray:1 1;stroke-dashoffset:calc(1 - var(--p,0))}
+.grid line{stroke:var(--blue);stroke-width:1.1px;vector-effect:non-scaling-stroke}
+.hudt{font-family:'IBM Plex Mono';font-weight:500;fill:var(--blue)}
+.tbb{fill:#F2F2EF;opacity:var(--q,1)}.tbs{fill:#FCFCFB;opacity:var(--q,1)}.tbd{fill:#D6D6D2;opacity:var(--q,1)}
+.wire-r .tbb{fill:#C9605A}.wire-r .tbs{fill:#DE8C86}.wire-r .tbd{fill:#A84841}
+.wire-k .tbb{fill:#4A4A50}.wire-k .tbs{fill:#6E6E74}.wire-k .tbd{fill:#36363B}
+</style></head>
+<body>
+<svg id="v" width="1920" height="1080" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+  <defs id="defs">
+    <pattern id="grid" patternUnits="userSpaceOnUse" width="40" height="40"><circle cx="20" cy="20" r="1.3" fill="#D7D7D2"/></pattern>
+  </defs>
+  <rect width="1920" height="1080" fill="#F5F5F2"/>
+  <g id="world">
+    <rect x="-6000" y="-4000" width="12000" height="8000" fill="url(#grid)"/>
+    <g id="ink"></g>
+  </g>
+  <g id="hud"></g>
+</svg>
+<script type="module">
+const J = await (await fetch('parts.json')).json();
+const NS = 'http://www.w3.org/2000/svg';
+const $ = (id) => document.getElementById(id);
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const ease = (x) => { x = clamp(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+const eout = (x) => 1 - Math.pow(1 - clamp(x), 3);
+const ein = (x) => Math.pow(clamp(x), 2.2);
+const lin = (t, t0, t1) => clamp((t - t0) / (t1 - t0));
+const ink = $('ink'), hud = $('hud'), defs = $('defs'), world = $('world');
+const plateB = el('rect', { x: 0, y: 900, width: 1920, height: 180, fill: '#F5F5F2', opacity: 0 }, hud);
+const plateT = el('rect', { x: 96, y: 48, width: 640, height: 176, rx: 10, fill: '#F5F5F2', opacity: 0 }, hud);
+const rise = J.rise;
+const K = J.scale * Math.sqrt(1.6), A = J.az * Math.PI / 180, E = Math.PI / 6;
+const iso = (x, y, z) => [(x * Math.sin(A) - y * Math.cos(A)) * K, ((x * Math.cos(A) + y * Math.sin(A)) * Math.sin(E) - z * Math.cos(E)) * K];
+const topM = (z) => { const o = iso(0, 0, z); return `matrix(${(Math.sin(A) * K).toFixed(4)} ${(Math.cos(A) * Math.sin(E) * K).toFixed(4)} ${(-Math.cos(A) * K).toFixed(4)} ${(Math.sin(A) * Math.sin(E) * K).toFixed(4)} ${o[0].toFixed(2)} ${o[1].toFixed(2)})`; };
+
+// ---- 零件與文字（同 v2） ----
+const parts = [];
+function part(parent, svg, t0, dur) { const g = el('g', {}, parent); g.innerHTML = svg; const o = { g, t0, dur }; parts.push(o); return o; }
+function reveal(t) { for (const p of parts) { const a = lin(t, p.t0, p.t0 + p.dur), q = lin(t, p.t0 + p.dur * .4, p.t0 + p.dur * 1.2); const key = a.toFixed(3) + '|' + q.toFixed(3); if (p.k !== key) { p.g.style.setProperty('--p', a.toFixed(4)); p.g.style.setProperty('--q', q.toFixed(4)); p.k = key; } } }
+let clipN = 0; const texts = [];
+function writeText(parent, { x, y, s, size, cls, t0, cps = 16, anchor = 'start', id, out = 1e9 }) {
+  const cid = 'c' + (clipN++); const cp = el('clipPath', { id: cid }, defs);
+  const w = [...s].reduce((a, ch) => a + (ch.charCodeAt(0) > 0x2e80 ? 1.02 : .62), 0) * size + size;
+  const r = el('rect', { x: anchor === 'start' ? x - size * .2 : anchor === 'middle' ? x - w / 2 : x - w, y: y - size * 1.15, width: 0, height: size * 1.6 }, cp);
+  const tx = el('text', { x, y, class: cls, 'font-size': size, 'clip-path': `url(#${cid})`, 'text-anchor': anchor }, parent);
+  tx.textContent = s;
+  const o = { r, w, t0, dur: Math.max(.35, [...s].length / cps), tx, s, id: id || cid, out }; texts.push(o); return o;
+}
+function revealText(t) { for (const o of texts) { o.r.setAttribute('width', (o.w * eout(lin(t, o.t0, o.t0 + o.dur))).toFixed(1)); o.tx.setAttribute('opacity', (1 - lin(t, o.out, o.out + .4)).toFixed(3)); } }
+function centreLine(a, b, dash = [26, 6, 4, 6]) { const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy); let s = 0, i = 0, d = ''; while (s < L) { const len = dash[i % 4]; if (i % 2 === 0) { const e = Math.min(L, s + len); d += `M${(a[0] + dx * s / L).toFixed(1)} ${(a[1] + dy * s / L).toFixed(1)}L${(a[0] + dx * e / L).toFixed(1)} ${(a[1] + dy * e / L).toFixed(1)}`; } s += len; i++; } return d; }
+
+// =========================================================================
+// 時間表
+const T = { keysGo: 6.4, morph0: 7.1, morph1: 8.5, dive0: 13.8, dive1: 15.4, grid: 15.0, touch1: 17.0, touch2: 20.4, pinch0: 22.2, pinch1: 24.0, back0: 25.2, back1: 27.0, dims: 27.2, out1: 33.2, f2: 33.8, sim: 35.2, ex: 36.8 };
+// HUD 字卡位置（螢幕座標）
+const HX = 1180, HY = 330;
+// ---- 1. 2007 年的鍵盤手機 ----
+const S0 = el('g', {}, ink);
+part(S0, `<path class="ln w4" pathLength="1" d="${centreLine(iso(30.5, -14, 15.5), iso(30.5, 125, 15.5)) + centreLine(iso(-12, 53.5, 15.5), iso(72, 53.5, 15.5))}"/>`, .1, .9);
+const MG = el('g', {}, S0);
+const morphG = J.morph.map((svg, i) => { const g = el('g', {}, MG); g.innerHTML = svg; g.style.display = i ? 'none' : ''; return g; });
+parts.push({ g: MG, t0: .8, dur: 1.2 });
+const keys = J.bb.keys.map((kk) => { const o = part(S0, kk.svg, 1.4 + kk.row * .12 + kk.col * .03, .6); o.row = kk.row; o.col = kk.col; return o; });
+const nav = J.bb.nav.map((svg, i) => { const o = part(S0, svg, 1.25 + i * .05, .6); o.row = -1; o.col = i; return o; });
+const outA = 8.2;
+writeText(hud, { x: HX, y: HY, s: '2007 年的智能手机', size: 46, cls: 'cap', t0: 1.3, id: 'a1', out: outA });
+writeText(hud, { x: HX, y: HY + 60, s: 'BlackBerry Curve 8300 · 实体全键盘', size: 28, cls: 'cap2', t0: 2.2, cps: 24, id: 'a2', out: outA });
+writeText(hud, { x: HX, y: HY + 106, s: '屏幕 2.5 英寸，只占正面的 30%', size: 28, cls: 'cap2', t0: 2.9, cps: 20, id: 'a3', out: outA });
+const RX = 150, RY = 300;
+writeText(hud, { x: RX, y: RY - 96, s: '屏幕占正面', size: 28, cls: 'cap2', t0: 3.6, id: 'r0', out: T.dive0 });
+const ratio = el('text', { x: RX, y: RY + 20, class: 'big', 'font-size': 128 }, hud);
+function setRatio(t) { const u = ease(lin(t, T.morph0, T.morph1)); ratio.textContent = Math.round((J.ratio.bb + (J.ratio.ip - J.ratio.bb) * u) * 100) + '%'; ratio.setAttribute('opacity', (lin(t, 3.6, 4.2) * (1 - lin(t, T.dive0, T.dive0 + .5))).toFixed(3)); }
+
+// ---- 2. FIG.01 初代 iPhone 正面 ----
+const F1 = el('g', {}, ink);
+const f1order = { shell: [0, .01], body: [0, .01], glass: [8.4, 1.0], bezel: [8.5, .9], bottom: [9.0, .7], sleep: [9.1, .5] };
+J.fig1.items.forEach((it) => { const [t0, d] = f1order[it.id]; part(F1, it.svg, t0, d); });
+writeText(hud, { x: HX, y: HY, s: '初代 iPhone · 2007', size: 46, cls: 'cap', t0: 8.7, cps: 14, id: 'b1', out: 13.8 });
+writeText(hud, { x: HX, y: HY + 60, s: '键盘消失，正面全是屏幕', size: 30, cls: 'cap2', t0: 9.1, cps: 16, id: 'b2', out: 13.8 });
+
+// ---- 3. 震撼段落：觸控電極網格（玻璃平面座標，mm） ----
+const ZG = 11.36, WX = (61 - 49.3) / 2, WY = 20.5, AW = 49.3, AH = 74.0, COLS = 10, ROWS = 15;
+const G3 = el('g', { transform: topM(ZG), class: 'grid' }, F1);
+const gridLines = [];
+for (let c = 0; c <= COLS; c++) gridLines.push({ e: el('line', { x1: WX + AW * c / COLS, y1: WY, x2: WX + AW * c / COLS, y2: WY + AH }, G3), t0: T.grid + c * .05, kind: 'c', i: c });
+for (let r = 0; r <= ROWS; r++) gridLines.push({ e: el('line', { x1: WX, y1: WY + AH * r / ROWS, x2: WX + AW, y2: WY + AH * r / ROWS }, G3), t0: T.grid + .5 + r * .04, kind: 'r', i: r });
+const scan = el('rect', { x: WX, y: WY, width: AW, height: AH / ROWS, fill: '#2F5BFF', opacity: 0 }, G3);   // 逐行掃描的驅動線
+const touches = [0, 1].map(() => {
+  const g = el('g', {}, G3);
+  const rings = [0, 1, 2].map(() => el('circle', { fill: 'none', stroke: '#2F5BFF', 'stroke-width': 1.4, 'vector-effect': 'non-scaling-stroke' }, g));
+  const pad = el('circle', { r: 4.2, fill: '#2F5BFF', 'fill-opacity': .16, stroke: '#2F5BFF', 'stroke-width': 1.6, 'vector-effect': 'non-scaling-stroke' }, g);
+  const hx = el('line', { stroke: '#2F5BFF', 'stroke-width': 2.4, 'vector-effect': 'non-scaling-stroke' }, g);
+  const hy = el('line', { stroke: '#2F5BFF', 'stroke-width': 2.4, 'vector-effect': 'non-scaling-stroke' }, g);
+  const dot = el('circle', { r: 1.0, fill: '#2F5BFF' }, g);
+  return { g, rings, pad, hx, hy, dot };
+});
+const P1a = [24, 52], P2a = [37, 66], P1b = [17, 38], P2b = [45, 80];
+writeText(hud, { x: 960, y: 952, s: '玻璃背后，是一张透明的电极网格', size: 32, cls: 'cap', t0: 15.4, cps: 12, anchor: 'middle', id: 's1', out: 27.4 });
+writeText(hud, { x: 960, y: 1000, s: '手指一碰，交叉点的电容改变，位置就被算出来', size: 32, cls: 'cap', t0: 18.6, cps: 14, anchor: 'middle', id: 's2', out: 27.4 });
+writeText(hud, { x: 960, y: 1046, s: '两根手指同时识别：张开两指，就能放大', size: 28, cls: 'cap2', t0: 20.8, cps: 14, anchor: 'middle', id: 's3', out: 27.4 });
+const hudTouch = el('text', { x: 150, y: 150, class: 'hudt', 'font-size': 30 }, hud);
+const hudXY = el('text', { x: 150, y: 196, class: 'cap2', 'font-size': 24 }, hud);
+writeText(hud, { x: 150, y: 104, s: '多点触控', size: 40, cls: 'cap', t0: 16.2, cps: 8, id: 'mt', out: 27.4 });
+function touchFrame(t) {
+  const on = lin(t, T.grid, T.grid + 1.2) * (1 - lin(t, T.back0 + .8, T.back1));
+  for (const L of gridLines) L.e.setAttribute('opacity', (lin(t, L.t0, L.t0 + .3) * .32 * (1 - lin(t, T.back0 + .8, T.back1))).toFixed(3));
+  const sc = (t - (T.grid + 1.6)) / .9; const row = ((Math.floor(sc * ROWS) % ROWS) + ROWS) % ROWS;
+  scan.setAttribute('y', (WY + AH * row / ROWS).toFixed(2)); scan.setAttribute('opacity', (t > T.grid + 1.6 ? .07 * on : 0).toFixed(3));
+  const pin = ease(lin(t, T.pinch0, T.pinch1));
+  const pos = [[P1a[0] + (P1b[0] - P1a[0]) * pin, P1a[1] + (P1b[1] - P1a[1]) * pin], [P2a[0] + (P2b[0] - P2a[0]) * pin, P2a[1] + (P2b[1] - P2a[1]) * pin]];
+  const starts = [T.touch1, T.touch2];
+  let n = 0;
+  touches.forEach((tc, j) => {
+    const a = lin(t, starts[j], starts[j] + .25) * (1 - lin(t, T.back0 + .6, T.back0 + 1.2)); if (a > .5) n++;
+    tc.g.setAttribute('opacity', a.toFixed(3));
+    const [x, y] = pos[j];
+    // 對齊到最近的電極交叉點（真實的定位會在交叉點之間插值；這裡標出被觸發的那一行一列）
+    const ci = Math.round((x - WX) / AW * COLS), ri = Math.round((y - WY) / AH * ROWS);
+    const cx = WX + AW * ci / COLS, cy = WY + AH * ri / ROWS;
+    tc.pad.setAttribute('cx', x); tc.pad.setAttribute('cy', y);
+    tc.hx.setAttribute('x1', WX); tc.hx.setAttribute('x2', WX + AW); tc.hx.setAttribute('y1', cy); tc.hx.setAttribute('y2', cy);
+    tc.hy.setAttribute('y1', WY); tc.hy.setAttribute('y2', WY + AH); tc.hy.setAttribute('x1', cx); tc.hy.setAttribute('x2', cx);
+    tc.hx.setAttribute('opacity', .55); tc.hy.setAttribute('opacity', .55);
+    tc.dot.setAttribute('cx', cx); tc.dot.setAttribute('cy', cy);
+    tc.rings.forEach((rg, k) => { const u = ((t - starts[j] - k * .33) % 1.0 + 1.0) % 1.0; const live = t > starts[j] + k * .33; rg.setAttribute('cx', x); rg.setAttribute('cy', y); rg.setAttribute('r', (4.2 + u * 11).toFixed(2)); rg.setAttribute('opacity', live ? ((1 - u) * .7).toFixed(3) : 0); });
+  });
+  hudTouch.textContent = n ? `检测到 ${n} 个触点` : '';
+  hudXY.textContent = n ? pos.slice(0, n).map((p) => `(${p[0].toFixed(1)}, ${(p[1] - WY).toFixed(1)}) mm`).join('   ') : '';
+  const hv = (1 - lin(t, T.back0 + .6, T.back0 + 1.2)).toFixed(3); hudTouch.setAttribute('opacity', hv); hudXY.setAttribute('opacity', hv);
+}
+// 尺寸線
+const D = J.fig1.dims;
+function dim(dd, t0, label) {
+  part(F1, `<path class="ln w4" pathLength="1" d="${dd.ext}"/><path class="ln w3" pathLength="1" d="${dd.line}"/><path class="ln w3" pathLength="1" d="${dd.heads}"/>`, t0, .7);
+  let ang = dd.angle; if (ang > 90) ang -= 180; if (ang < -90) ang += 180;
+  const g = el('g', { transform: `translate(${dd.mid[0].toFixed(1)} ${dd.mid[1].toFixed(1)}) rotate(${ang.toFixed(2)})` }, F1);
+  writeText(g, { x: 0, y: -10, s: label, size: 22, cls: 'dimt', t0: t0 + .45, anchor: 'middle', cps: 14, id: 'dim' + label, out: T.out1 });
+}
+dim(D.d115, T.dims, '115 mm'); dim(D.d61, T.dims + .4, '61 mm'); dim(D.d116, T.dims + .8, '11.6 mm');
+writeText(hud, { x: HX, y: HY, s: '115 × 61 × 11.6 mm · 135 g', size: 34, cls: 'cap2', t0: T.dims + .3, cps: 20, id: 'b3', out: T.out1 });
+writeText(hud, { x: HX, y: HY + 56, s: '屏幕 3.5 英寸 · 480×320 · 163 ppi', size: 28, cls: 'cap2', t0: T.dims + .8, cps: 26, id: 'b4', out: T.out1 });
+
+// =========================================================================
+// 4. FIG.02 背面：九組（階梯式爆炸）
+const F2 = el('g', {}, ink);
+// 精確版：每個零件一個 <g>，順序由 Anatomy audit 算出的 key＋爆炸位移決定（每幀重排，同 Raptor）
+const IT2 = J.fig2.items.map((it) => { const g = el('g', {}, F2); part(g, it.svg, T.f2 + (8 - it.g) * .04, 1.3); return { ...it, el: g, k: it.keys.A }; });
+let ORDER2 = '';
+const G2 = J.fig2.groups.map((g) => ({ ...g, items: IT2.filter((it) => it.g === g.index) }));
+// 三段爆炸（時間表與 audit 同一份 J.tl）：A 抬升成塔 → B 各組在各自高度上滑到階梯位置 → C 組內分層升起
+const TL = J.tl;
+const shA = (t) => ease(lin(t, T.ex + TL.lift[0], T.ex + TL.lift[1]));
+const shB = (i, t) => ease(lin(t, T.ex + TL.slide0 + Math.abs(i - 4) * TL.stagger, T.ex + TL.slide0 + Math.abs(i - 4) * TL.stagger + TL.slideDur));
+const shC = (t) => ease(lin(t, T.ex + TL.subs[0], T.ex + TL.subs[1]));
+const shareOf = (i, t) => shB(i, t);
+writeText(hud, { x: HX, y: HY, s: '背面爆炸图', size: 46, cls: 'cap', t0: T.f2, cps: 10, id: 'c1', out: T.ex + 3.0 });
+writeText(hud, { x: HX, y: HY + 60, s: '9 个组件，从正面到背面编号', size: 28, cls: 'cap2', t0: T.f2 + .8, cps: 14, id: 'c2', out: T.ex + 3.0 });
+// SIM 卡托標註（世界座標，跟著卡托）
+const SIMS = IT2.filter((it) => it.tag === 'sim'), SIMGI = SIMS[0].g;
+const simLab = el('g', {}, ink);
+writeText(simLab, { x: 0, y: 0, s: 'SIM 卡托 · 回形针一顶就弹出', size: 24, cls: 'cap2', t0: T.sim + .6, cps: 14, id: 'sim', out: T.ex + .2 });
+
+// ---- 巡覽 ----
+const TOUR0 = T.ex + 4.6, MOVE = .8;
+const HOLD = (i) => (i === 5 ? 5.4 : 2.7);
+const stops = []; { let t = TOUR0; for (let i = 0; i < 9; i++) { stops.push({ i, t, hold: HOLD(i) }); t += HOLD(i) + MOVE; } }
+const TOUR1 = stops[8].t + stops[8].hold;
+const B = J.fig2.box; const BC = [(B[0] + B[2]) / 2, (B[1] + B[3]) / 2];
+const ZTOP = J.fig2.groups.map((g) => g.ztop);
+const EXTRA = J.fig2.groups.map((g) => (g.extra >= 3 ? g.extra - 1 : g.extra));   // 組內最高分層（螺絲層不算）
+const labels = J.fig2.groups.map((g, i) => {
+  const above = i % 2 === 0, st = stops[i], t0 = st.t - .15;
+  const grp = el('g', {}, ink);
+  const leader = el('path', { class: 'lead', pathLength: 1 }, grp);
+  const dot = el('circle', { r: 5, fill: '#2F5BFF' }, grp);
+  const num = String(i + 1).padStart(2, '0');
+  const tg = el('g', {}, grp);
+  const n = g.sub.length;
+  const nameY = above ? -(n * 32 + 14) : 46, subY0 = above ? -n * 32 + 18 : 88;
+  writeText(tg, { x: 0, y: nameY, s: num, size: 28, cls: 'lab-num', t0: t0 + .3, cps: 20, id: 'n' + num });
+  writeText(tg, { x: 54, y: nameY, s: g.name, size: 36, cls: 'lab-name', t0: t0 + .4, cps: 14, id: 'l' + num });
+  g.sub.forEach((s, j) => writeText(tg, { x: 54, y: subY0 + j * 32, s, size: 24, cls: 'lab-sub', t0: t0 + .9 + j * .3, cps: 26, id: 'l' + num + 's' + j }));
+  return { g, i, above, st, t0, grp, leader, dot, tg };
+});
+function groupOff(i, t) { const a = shA(t), b = shB(i, t), g = J.fig2.groups[i]; return [g.liftS[0] * a + g.slideS[0] * b, g.liftS[1] * a + g.slideS[1] * b]; }
+function placeLabels(t) {
+  for (const L of labels) {
+    const [ox, oy] = groupOff(L.i, t);
+    const ap = L.above ? iso(18, 22, ZTOP[L.i]) : iso(40, 104, 0);
+    const ax = ap[0] + ox, ay = ap[1] + oy;
+    const top = B[1] + oy - EXTRA[L.i] * J.subz * rise - (L.i === 5 ? 120 : 0), bot = B[3] + oy;
+    const ly = L.above ? top - 40 : bot + 40;
+    const a = lin(t, L.t0, L.t0 + .5);
+    L.leader.setAttribute('d', `M${ax.toFixed(1)} ${ay.toFixed(1)}L${ax.toFixed(1)} ${ly.toFixed(1)}L${(ax + 40).toFixed(1)} ${ly.toFixed(1)}`);
+    L.leader.style.setProperty('--p', ease(a).toFixed(4));
+    L.dot.setAttribute('cx', ax.toFixed(1)); L.dot.setAttribute('cy', ay.toFixed(1)); L.dot.setAttribute('opacity', clamp(a * 4).toFixed(3));
+    L.tg.setAttribute('transform', `translate(${(ax + 50).toFixed(1)} ${ly.toFixed(1)})`);
+    const lit = lin(t, L.st.t - .2, L.st.t + .3) * (1 - lin(t, L.st.t + L.st.hold + .2, L.st.t + L.st.hold + .7));
+    const ls = lit.toFixed(3); for (const it of G2[L.i].items) it.el.style.setProperty('--lit', ls);
+  }
+}
+
+// ---- 標題欄（結尾大遠景，世界座標：右下） ----
+const TB = el('g', {}, ink);
+const tbx = 980, tby = 640, TBt = TOUR1 + 1.6;
+part(TB, `<path class="ln w2" pathLength="1" d="M${tbx} ${tby}H${tbx + 640}V${tby + 270}H${tbx}Z M${tbx} ${tby + 74}H${tbx + 640} M${tbx} ${tby + 142}H${tbx + 640} M${tbx} ${tby + 206}H${tbx + 640} M${tbx + 340} ${tby + 142}V${tby + 206}"/>`, TBt, 1.0);
+writeText(TB, { x: tbx + 22, y: tby + 52, s: '初代 iPhone · 2007', size: 40, cls: 'cap', t0: TBt + .4, id: 'tb1' });
+writeText(TB, { x: tbx + 22, y: tby + 118, s: '115 × 61 × 11.6 mm · 135 g', size: 28, cls: 'cap2', t0: TBt + .8, cps: 24, id: 'tb2' });
+writeText(TB, { x: tbx + 22, y: tby + 184, s: '9 个组件', size: 28, cls: 'cap2', t0: TBt + 1.1, id: 'tb3' });
+writeText(TB, { x: tbx + 362, y: tby + 184, s: '图 01', size: 28, cls: 'cap2', t0: TBt + 1.3, id: 'tb4' });
+writeText(TB, { x: tbx + 22, y: tby + 248, s: '数据：Apple 官方规格 · iFixit 拆机', size: 24, cls: 'cap2', t0: TBt + 1.0, cps: 22, id: 'tb5' });
+
+// =========================================================================
+// 鏡頭（世界中心、縮放）
+const FC = [BC[0] + 260, BC[1] - 10];           // FIG.01：機身在左半，字卡在右
+const GC = J.pts.glassC;
+const CAM = [[0, FC[0], FC[1], 1.16], [6.0, FC[0], FC[1], 1.24], [T.dive0, FC[0], FC[1], 1.24], [T.dive1, GC[0], GC[1] + 10, 3.1], [T.back0, GC[0] + 6, GC[1] + 4, 3.2], [T.back1, FC[0], FC[1], 1.24], [T.out1, FC[0], FC[1], 1.24], [T.ex, FC[0], FC[1], 1.15], [T.ex + 1.3, 300, -70, .92], [T.ex + 3.4, -14, 150, .45], [TOUR0 - .6, -14, 150, .45]];
+stops.forEach((s) => { const g = J.fig2.groups[s.i]; const cy = BC[1] + g.off[1] + 20 - (s.i === 5 ? 50 : 0); const cx = BC[0] + g.off[0] + 330; CAM.push([s.t, cx, cy, .9]); CAM.push([s.t + s.hold, cx + 16, cy, .9]); });
+CAM.push([TOUR1 + 3.0, -14, 330, .44], [TOUR1 + 8.6, 0, 330, .435]);
+const DUR = +(TOUR1 + 8.6).toFixed(2);
+function camAt(t) { let i = 0; while (i < CAM.length - 2 && t > CAM[i + 1][0]) i++; const [t0, x0, y0, z0] = CAM[i], [t1, x1, y1, z1] = CAM[i + 1]; const u = ease(lin(t, t0, t1)); return [x0 + (x1 - x0) * u, y0 + (y1 - y0) * u, Math.exp(Math.log(z0) + (Math.log(z1) - Math.log(z0)) * u)]; }
+
+const CAMQ = new URLSearchParams(location.search).get('cam')?.split(',').map(Number) || null;   // 檢查用：?cam=x,y,縮放
+window.DUR = DUR;
+window.CUES = { T, TL, DUR, TOUR1, stops: stops.map(({ i, t, hold }) => ({ i, t, hold })), keys: J.bb.keys.map((k) => ({ row: k.row, col: k.col })) };   // 給配樂、音效讀的時間表
+window.render = (t) => {
+  const [cx, cy, z] = CAMQ || camAt(t);
+  world.setAttribute('transform', `translate(960 540) scale(${z.toFixed(5)}) translate(${(-cx).toFixed(2)} ${(-cy).toFixed(2)})`);
+  document.documentElement.style.setProperty('--lw', (Math.pow(z, .65) / z).toFixed(4));
+  for (const kk of keys.concat(nav)) { const s = T.keysGo + (kk.row + 1) * .13 + kk.col * .025, u = ein(lin(t, s, s + .75)); kk.g.setAttribute('transform', `translate(0 ${(-u * 70 * rise).toFixed(2)})`); kk.g.setAttribute('opacity', (1 - lin(t, s + .2, s + .75)).toFixed(3)); }
+  const u = ease(lin(t, T.morph0, T.morph1)), idx = Math.round(u * 24);
+  morphG.forEach((g, i) => (g.style.display = i === idx ? '' : 'none'));
+  MG.setAttribute('opacity', (1 - lin(t, T.morph1, T.morph1 + .3)).toFixed(3));
+  S0.style.display = t > T.morph1 + .35 ? 'none' : '';
+  F1.style.display = t < T.morph1 - .05 || t > T.out1 + .9 ? 'none' : '';
+  F1.setAttribute('opacity', (1 - lin(t, T.out1, T.out1 + .8)).toFixed(3));
+  F2.style.display = t < T.f2 - .05 ? 'none' : '';
+  // SIM 卡托退出
+  const se = ease(lin(t, T.sim, T.sim + 1.0));   // 卡托退出後一直留在外面（拆解時跟著主板走）
+  { const [ox, oy] = groupOff(SIMGI, t); const p = iso(30.5, -18, 9); simLab.setAttribute('transform', `translate(${(p[0] + J.pts.simDir[0] + ox + 30).toFixed(1)} ${(p[1] + J.pts.simDir[1] + oy - 40).toFixed(1)})`); }
+  // 爆炸：每個零件跟著自己的組平移＋組內分層抬高；主板的兩塊屏蔽蓋在巡覽到主板時掀開；SIM 卡托退出時在機身後面
+  const a = shA(t), c = shC(t), sb = J.fig2.groups.map((g) => shB(g.index, t));
+  const anyB = sb.some((v) => v > 0);
+  for (const it of IT2) {
+    const [ox, oy] = groupOff(it.g, t);
+    let dz = it.sub * J.subz * c, op = 1, dx = 0, dy = 0;
+    if (it.tag === 'lid') { const st = stops[5]; const l = ease(lin(t, st.t + .5, st.t + 1.6)); dz += l * 20; op = 1 - .8 * l; }
+    if (it.g === 5 && it.sub === 1) { const st = stops[5]; dz += ease(lin(t, st.t + 2.0, st.t + 3.0)) * 20; }   // 通訊板再升高，露出下面應用板的處理器
+    if (it.tag === 'sim') { dx = J.pts.simDir[0] * (se - 1); dy = J.pts.simDir[1] * (se - 1); }
+    it.el.setAttribute('transform', `translate(${(ox + dx).toFixed(2)} ${(oy + dy - dz * rise).toFixed(2)})`);
+    it.el.setAttribute('opacity', op.toFixed(3));
+    it.k = (c > 0 ? it.keys.C + it.lifts.C * c : anyB ? it.keys.B + it.lifts.B * sb[it.g] : it.keys.A + it.lifts.A * a) + (it.tag === 'sim' && se > 0.001 && se < 0.999 ? -1e4 : 0);
+  }
+  const sorted = IT2.slice().sort((a, b) => a.k - b.k), sig = sorted.map((it) => it.name).join('|');
+  if (sig !== ORDER2) { ORDER2 = sig; for (const it of sorted) F2.appendChild(it.el); }
+  { const pv = lin(t, T.dive1 - .3, T.dive1 + .2) * (1 - lin(t, T.back0 + 1.4, T.back1 + .2)); plateB.setAttribute('opacity', (pv * .9).toFixed(3)); plateT.setAttribute('opacity', (pv * .9).toFixed(3)); }
+  setRatio(t); touchFrame(t); reveal(t); revealText(t); placeLabels(t);
+};
+window.TEXTS = (t) => texts.filter((o) => t >= o.t0 + o.dur && t < o.out && +o.tx.getAttribute('opacity') > .9).map((o) => { const b = o.tx.getBoundingClientRect(); return { id: o.id, text: o.s, x0: b.left, y0: b.top, x1: b.right, y1: b.bottom }; }).filter((b) => b.x1 > 0 && b.y1 > 0 && b.x0 < 1920 && b.y0 < 1080 && b.x1 - b.x0 > 2);
+await document.fonts.ready;
+window.render(+(new URLSearchParams(location.search).get('t') || 0));   // 檢查用：?t=秒
+if (new URLSearchParams(location.search).get('lines')) document.querySelectorAll('#ink .ln.w3, #ink .ln.w4').forEach((e) => { if (e.closest('[style*="display: none"]')) return; e.classList.add('iso-line'); });   // 檢查用：給 Anatomy 的線端檢查
+window.READY = true;
+</script>
+</body></html>
