@@ -251,6 +251,7 @@ function camAt(t) { let i = 0; while (i < CAM.length - 2 && t > CAM[i + 1][0]) i
 
 const CAMQ = new URLSearchParams(location.search).get('cam')?.split(',').map(Number) || null;   // 檢查用：?cam=x,y,縮放
 window.DUR = DUR;
+window.CUES = { T, TL, DUR, TOUR1, stops: stops.map(({ i, t, hold }) => ({ i, t, hold })), keys: J.bb.keys.map((k) => ({ row: k.row, col: k.col })) };   // 給配樂、音效讀的時間表
 window.render = (t) => {
   const [cx, cy, z] = CAMQ || camAt(t);
   world.setAttribute('transform', `translate(960 540) scale(${z.toFixed(5)}) translate(${(-cx).toFixed(2)} ${(-cy).toFixed(2)})`);
