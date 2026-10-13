@@ -1,0 +1,16 @@
+{
+  "created_at": "2026-10-13T12:50:15.945Z",
+  "prompt": "Edit the first image. Keep EVERYTHING identical — the same scene, hotpot, characters, their positions and poses, lighting, glossy red chili-oil jelly material with chili flakes and sesame seeds inside, framing — EXCEPT fix the shapes of the four big 3D title letters. The second image is the exact glyph reference: the four Simplified Chinese characters 重 庆 火 锅. Rebuild each 3D jelly letter so its strokes match the reference glyph exactly, stroke for stroke: 重 must have exactly the correct strokes of 重 (a short top slash, then the 里-like body with its horizontal strokes, no extra lines); 庆 as in the reference; 火 as in the reference; 锅 must be correct with the 钅 radical on the left and 呙 on the right (a small 口 on top and the 内-like frame with 人 inside below). Keep the letters the same size, position, chunky rounded 3D jelly style, glow and shadows. The characters still interact with the letters as before: tripe lying on top of 重, chili sitting on top of 火, garlic clove peeking from the top of 锅, beef roll hanging from a stroke of 锅. No other text. Photorealistic, same film grain.\n画面要求：背景不透明，纸面或底色铺满整个画面，不要透明、镂空或黑色边角区域。",
+  "aspect_ratio": "3:4",
+  "reference_images": [
+    "/Users/wangyuren/Downloads/視頻拆解/006/素材/cover_3x4_v2_3dtitle.png",
+    "/Users/wangyuren/Downloads/視頻拆解/006/素材/glyph_ref.png"
+  ],
+  "dimensions": {
+    "width": 1086,
+    "height": 1448
+  },
+  "flattened_transparency": false,
+  "revised_prompt": "Edit the first image using the second image as the exact glyph reference. Keep EVERYTHING identical: the same hotpot scene, background, characters, their positions and poses, lighting, glossy red chili-oil jelly material with chili flakes and sesame seeds inside, framing, shadows, glow, photorealistic style, and film grain. Only fix the shapes of the four large 3D title letters. Rebuild the four chunky rounded 3D jelly Simplified Chinese characters so they read exactly 重 庆 火 锅 and match the second reference glyph stroke for stroke. 重 must have the correct strokes: short top slash/stroke and the 里-like body with correct horizontal strokes, no extra lines. 庆 must match the reference character. 火 must match the reference character. 锅 must be correct with 钅 radical on the left and 呙 on the right: small 口 on top and the 内-like frame with 人 inside below. Keep the letters the same size, same positions, same chunky rounded transparent red chili-oil jelly style, same glow and shadows. Preserve all interactions exactly as before: tripe lying on top of 重, chili sitting on top of 火, garlic clove peeking from the top of 锅, beef roll hanging from a stroke of 锅. No other text. Background must be fully opaque and fill the entire image; no transparent, cutout, hollow, black corner, or empty edge areas.",
+  "route": "raw_prompt"
+}
