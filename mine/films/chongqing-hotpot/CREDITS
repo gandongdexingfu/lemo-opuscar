@@ -1,0 +1,16 @@
+重慶火鍋（Chongqing Hotpot）— 素材來源與授權
+
+畫面：MiniMax 圖生視頻（MiniMax Design App，用戶會員帳號生成），用戶擁有使用權。提示詞見 prompts/minimax_prompts.md。
+首幀圖與封面底圖：ChatGPT（OpenAI）圖像生成，經 qiaomu-codex-imagegen 呼叫，用戶擁有使用權。提示詞見 prompts/first_frames.md。
+剪接、轉場、調色、循環段：代碼（ffmpeg，cut.py），本專案原創。
+配樂：代碼合成原創樂譜（audio.py，numpy／scipy），D 大調五聲，木魚、沙鈴、貝斯、kick、拍手、pad、Karplus-Strong 撥弦。
+合成音效：入水、氣泡、boing、呼嘯、滑哨、叮、蒸氣、冰晶（audio.py），本專案原創。
+真實音效（Freesound，CC0 1.0 公眾領域）：
+  215144 Fridge Hum
+  468911 Bacon Sizzling
+  380828 Pot of Water Boiling
+  534289 gulping
+  353175 Coffee Drips Into Glass Pot
+  （另有未使用的 CC0 候選：130474、338115、137258、182393、699231、264455、585516、678969）
+封面字：Noto Serif CJK SC Black（SIL Open Font License 1.1），代碼繪製金箔浮雕（cover/plaque.py）。
+參考：一支韓式烤五花肉擬人短片（只拆解結構與手法，不使用其畫面或聲音）；Staircase Loop Prompt Pack（借鑑節拍表與循環結構的寫法）。

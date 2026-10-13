@@ -14,5 +14,6 @@
 | 寫實照片演變片 | routes/寫實照片演變片.md | films/light-evolution | [Release light-evolution-v1](https://github.com/gandongdexingfu/lemo-opuscar/releases/tag/light-evolution-v1) |
 | 照片塗鴉片 | routes/照片塗鴉片.md | films/taiwan-sparrow | [Release taiwan-sparrow-v1](https://github.com/gandongdexingfu/lemo-opuscar/releases/tag/taiwan-sparrow-v1) |
 | 網站宣傳片 | routes/網站宣傳片.md | films/site-promo | 成片可放 Release site-promo-v1 |
+| AI 視頻擬人片（MiniMax 畫面＋代碼後期） | routes/AI視頻擬人片.md | films/chongqing-hotpot | [分支 assets/chongqing-hotpot](https://github.com/gandongdexingfu/lemo-opuscar/tree/assets/chongqing-hotpot) |
 
 選風格時可看 opuscar 的 43 種風格（`styles/README.md`）與 98 種風格提示詞：https://lemomo-ai.github.io/lemo-opuscar/opuscar98/#styles
