@@ -1,0 +1,15 @@
+{
+  "created_at": "2026-10-12T14:31:11.886Z",
+  "prompt": "Use the reference image only for the pot design, lighting and color mood. Photorealistic macro food photograph, vertical 9:16, camera about 60 degrees above, closer than the reference. The SAME dark iron jiugongge (nine-grid) Chongqing hotpot with the Greek-key pattern rim, but the pot is just starting to heat: only a shallow layer of clear hot oil and a little water in the grid. In the central square sits one large solid block of Chongqing beef-tallow hotpot base: an opaque deep brick-red waxy block, packed with visible dried red chilies and Sichuan peppercorns set into the solidified tallow. Its edges are just beginning to melt, a thin ring of glossy red chili oil spreading outward from the block into the neighbouring squares, tiny bubbles and a first wisp of steam. Warm tungsten restaurant lighting, rich red and amber tones, shallow depth of field, oily glistening highlights, appetizing cinematic food commercial look, film grain. No people, no text, no logos.\n画面要求：背景不透明，纸面或底色铺满整个画面，不要透明、镂空或黑色边角区域。",
+  "aspect_ratio": "9:16",
+  "reference_images": [
+    "/Users/wangyuren/Downloads/視頻拆解/006/素材/s03_red_broth.png"
+  ],
+  "dimensions": {
+    "width": 941,
+    "height": 1672
+  },
+  "flattened_transparency": false,
+  "revised_prompt": "Use the reference image only for the pot design, lighting and color mood. Generate a photorealistic macro food photograph, vertical 9:16, camera about 60 degrees above, closer than the reference. The same dark iron jiugongge nine-grid Chongqing hotpot with the Greek-key pattern rim, but the pot is just starting to heat: only a shallow layer of clear hot oil and a little water in the grid. In the central square sits one large solid block of Chongqing beef-tallow hotpot base: an opaque deep brick-red waxy block, packed with visible dried red chilies and Sichuan peppercorns embedded into the solidified tallow. Its edges are just beginning to melt, a thin ring of glossy red chili oil spreading outward from the block into the neighbouring squares, tiny bubbles and a first wisp of steam. Warm tungsten restaurant lighting, rich red and amber tones, shallow depth of field, oily glistening highlights, appetizing cinematic food commercial look, subtle film grain. No people, no text, no logos. Full opaque background or tabletop fills the entire frame; no transparency, no cutouts, no black corner areas.",
+  "route": "raw_prompt"
+}

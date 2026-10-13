@@ -1,0 +1,15 @@
+{
+  "created_at": "2026-10-12T14:27:03.480Z",
+  "prompt": "Edit this photograph: keep EVERYTHING identical (same frosty freezer drawer, same five frozen marbled fatty beef rolls, same frost, mist, framing, camera, icy blue lighting) except the eyes on the middle roll. REMOVE the realistic human eyes completely (no eyelids, no eye whites, no skin). Replace them with two small, perfectly round, glossy solid black bead eyes, like shiny buttons sewn on a plush toy, each with one tiny white highlight dot, set slightly apart on the meat surface, cute and innocent. A few frost crystals touch the edge of the beads. No mouth, no eyebrows, no limbs. Photorealistic, same film grain. No text.\n画面要求：背景不透明，纸面或底色铺满整个画面，不要透明、镂空或黑色边角区域。",
+  "aspect_ratio": "9:16",
+  "reference_images": [
+    "/Users/wangyuren/Downloads/視頻拆解/006/素材/s01_freezer_beef.png"
+  ],
+  "dimensions": {
+    "width": 941,
+    "height": 1672
+  },
+  "flattened_transparency": false,
+  "revised_prompt": "Edit the provided photograph while keeping everything else identical: same frosty freezer drawer, same five frozen marbled fatty beef rolls, same frost, mist, framing, camera perspective, icy blue lighting, photorealistic film grain, and fully opaque filled background with no transparent/cutout/black corner areas. On only the middle beef roll, completely remove the realistic human eyes, including all eyelids, eye whites, skin, and human eye texture. Replace them with two small, perfectly round, glossy solid black bead eyes like shiny button eyes on a plush toy, each with exactly one tiny white highlight dot. Place the bead eyes slightly apart on the meat surface, cute and innocent, naturally embedded on the frosty meat. Add a few frost crystals touching the bead edges. No mouth, no eyebrows, no limbs, no text.",
+  "route": "raw_prompt"
+}

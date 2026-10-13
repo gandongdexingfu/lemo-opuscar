@@ -1,0 +1,15 @@
+{
+  "created_at": "2026-10-12T15:17:22.763Z",
+  "prompt": "Use the reference image for the meat texture, the googly eyes and the icy freezer look. Photorealistic cinematic food-character shot, vertical 9:16, in the style of a high-end 3D animated food commercial where real ingredients come alive. Inside a frosty freezer drawer, three raw Chongqing hotpot fatty beef rolls stand upright on the frosted shelf like little characters, huddling together and shivering from the cold. Each roll keeps a perfectly realistic texture: deep red marbled beef with creamy white fat swirls, rolled into a cylinder, dusted with fine frost crystals. Each has two googly eyes (round white eyeballs with black pupils), a small simple mouth, and tiny stubby arms and short little legs made of the same pale pink-white beef fat. The middle roll is the main character, slightly in front, hugging itself with its tiny arms, teeth chattering, eyes wide; the two side rolls cling to it. A little puff of cold breath comes from the middle roll's mouth. Thin cold mist drifts, icy blue lighting with soft highlights, frosted freezer walls blurred behind, shallow depth of field, focus on the middle roll. Cute but appetizing, high detail, film grain. No text, no logos.\n画面要求：背景不透明，纸面或底色铺满整个画面，不要透明、镂空或黑色边角区域。",
+  "aspect_ratio": "9:16",
+  "reference_images": [
+    "/Users/wangyuren/Downloads/視頻拆解/006/素材/char_ref_googly.png"
+  ],
+  "dimensions": {
+    "width": 941,
+    "height": 1672
+  },
+  "flattened_transparency": false,
+  "revised_prompt": "Use the reference image as the visual reference for the raw fatty beef roll texture, googly eyes, frost crystals, and icy freezer atmosphere. Generate a photorealistic cinematic food-character shot in vertical 9:16, high-end 3D animated food commercial style where real ingredients come alive. Inside a frosty freezer drawer, three raw Chongqing hotpot fatty beef rolls stand upright on a frosted shelf like little characters, huddling together and shivering from the cold. Each roll has perfectly realistic deep red marbled beef with creamy white fat swirls, rolled into a cylinder, dusted with fine frost crystals. Each character has two googly eyes, round white eyeballs with glossy black pupils, a small simple mouth, and tiny stubby arms and short little legs made from the same pale pink-white beef fat. The middle roll is the main character, slightly in front, hugging itself with its tiny arms, teeth chattering, eyes wide; the two side rolls cling to it closely. A little puff of cold breath comes from the middle roll's mouth. Thin cold mist drifts through the scene, icy blue lighting with soft highlights, frosted freezer walls blurred behind, shallow depth of field, sharp focus on the middle roll. Cute but appetizing, extremely detailed meat texture, subtle film grain. No text, no logos. The background must be fully opaque and fill the entire frame; no transparent areas, no cutouts, no black corners or empty border regions.",
+  "route": "raw_prompt"
+}
