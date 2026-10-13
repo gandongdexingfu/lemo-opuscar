@@ -1,0 +1,15 @@
+{
+  "created_at": "2026-10-13T10:17:45.080Z",
+  "prompt": "Edit this image: keep EVERYTHING identical (same pot, broth, cooked beef roll character cheering, chili and peppercorn characters, chopsticks, green scallion bungee cord, table, lighting, framing) EXCEPT replace the cylindrical spiky creature with a correct piece of Chongqing hotpot beef tripe (毛肚 / black omasum tripe): a large THIN FLAT SHEET, roughly a rounded rectangle about the size of a palm, slightly wavy and ruffled at the edges, flexible like a towel or a cape. One face is dark grey-black and densely covered with many short soft velvety papillae like a fine towel texture; the edge shows the paler grey thin layer. Realistic raw tripe texture, glistening. It keeps the character features: googly eyes and a small toothless mouth wide open in a thrilled scream on the upper part of the sheet, tiny dark arms reaching forward and tiny legs at the bottom corners. The green scallion stalk is tied around its middle like a bungee cord, the other end still knotted to the chopstick tip. The sheet is falling head-first toward the broth, flapping slightly like a cape. Photorealistic, same film grain. No text.\n画面要求：背景不透明，纸面或底色铺满整个画面，不要透明、镂空或黑色边角区域。",
+  "aspect_ratio": "9:16",
+  "reference_images": [
+    "/Users/wangyuren/Downloads/視頻拆解/006/素材/s06_tripe_bungee.png"
+  ],
+  "dimensions": {
+    "width": 941,
+    "height": 1672
+  },
+  "flattened_transparency": false,
+  "revised_prompt": "Edit the provided image. Keep EVERYTHING identical: same hotpot, broth, cooked beef roll character cheering, chili and peppercorn characters, chopsticks, green scallion bungee cord, table, lighting, framing, photorealistic style, and film grain. The only change is to replace the cylindrical spiky creature with a correct piece of Chongqing hotpot beef tripe (毛肚 / black omasum tripe): a large thin flat sheet, roughly a rounded rectangle about palm size, slightly wavy and ruffled at the edges, flexible like a towel or cape. One face is dark grey-black and densely covered with many short soft velvety papillae like fine towel texture; the edge shows a paler grey thin layer. It has realistic raw tripe texture and is glistening. Preserve character features on this tripe sheet: googly eyes and a small toothless mouth wide open in a thrilled scream on the upper part of the sheet, tiny dark arms reaching forward, and tiny legs at the bottom corners. The green scallion stalk is tied around its middle like a bungee cord, with the other end still knotted to the chopstick tip. The sheet is falling head-first toward the broth, flapping slightly like a cape. No text. Ensure the background is fully opaque and fills the whole frame, with no transparency, cutouts, black corners, or empty border areas.",
+  "route": "raw_prompt"
+}

@@ -1,0 +1,15 @@
+{
+  "created_at": "2026-10-12T15:40:37.491Z",
+  "prompt": "Recreate this exact scene with the same characters, but with a wider camera framing so that at least 90% of the whole pot is visible. Keep identical: the same large brick-red beef-tallow block character embedded with dried chilies and Sichuan peppercorns, googly eyes peacefully closed, small content smile, chubby tallow arms; the same two dried chili characters and the peppercorn-cluster character with googly eyes and tiny arms clinging to the pot rim, peeking at it; the same glossy red chili oil, bubbles, steam, warm tungsten restaurant lighting and wooden table. New framing: camera higher and farther back, about 50 degrees above. One single big round dark iron hotpot (no dividers) shown almost completely: the full round rim visible, both side handles visible, the pot occupying about 75% of the frame width, placed in the lower-middle of the vertical frame, with some wooden table and blurred restaurant background above it. The tallow block is large inside the pot, leaning back against the far rim, BOTH arms resting on the rim, so its face is still clearly readable. Warm tungsten light, glistening oil highlights, cute food-character animation in a photorealistic style, appetizing, film grain. No humans, no text, no logos.\n画面要求：背景不透明，纸面或底色铺满整个画面，不要透明、镂空或黑色边角区域。",
+  "aspect_ratio": "9:16",
+  "reference_images": [
+    "/Users/wangyuren/Downloads/視頻拆解/006/素材/s02_tallow_hotspring.png"
+  ],
+  "dimensions": {
+    "width": 941,
+    "height": 1672
+  },
+  "flattened_transparency": false,
+  "revised_prompt": "Use the attached reference as the image/style reference and recreate the exact same cute photorealistic food-character hotpot scene, but with a wider camera framing. Vertical image. Camera higher and farther back, about 50 degrees above, showing one single big round dark iron hotpot with no dividers almost completely: at least 90% of the whole pot visible, full round rim visible, both side handles visible. The pot occupies about 75% of the frame width and sits in the lower-middle of the vertical frame, with wooden table visible around it and a softly blurred warm restaurant background above it.\n\nKeep identical subject details from the reference: the same large brick-red beef-tallow block character embedded with dried chilies and Sichuan peppercorns, glossy oily surface, googly eyes peacefully closed, small content smile, chubby tallow arms; the same two dried chili characters and the same peppercorn-cluster character with googly eyes and tiny arms clinging to the pot rim, peeking at the tallow block. The tallow block is large inside the pot, leaning back against the far rim, with BOTH arms resting on the rim so its face remains clearly readable.\n\nInclude glossy red chili oil, dried chilies, Sichuan peppercorns, bubbles, steam, warm tungsten restaurant lighting, wooden table, appetizing glistening highlights, subtle film grain, photorealistic cute food-character animation style. No humans, no text, no logos. The background must be fully opaque and fill the entire image; no transparent areas, no cutouts, no black corner regions.",
+  "route": "raw_prompt"
+}

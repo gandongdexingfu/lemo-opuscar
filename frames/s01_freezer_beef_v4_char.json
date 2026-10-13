@@ -1,0 +1,15 @@
+{
+  "created_at": "2026-10-12T15:21:44.127Z",
+  "prompt": "Edit this image: keep EVERYTHING identical (same three frosty fatty beef roll characters, same googly eyes, same tiny arms and legs, same poses, hugging, frost, cold breath puff, freezer, framing, icy blue lighting) except the mouths. Remove all teeth completely. Give each roll a simple small cartoon mouth with no teeth and no lips: the middle roll has a small trembling open \"o\" mouth from the cold with a puff of cold breath coming out; the two side rolls have small wavy worried mouths. Mouths are simple dark shapes on the meat surface, like the characters in a cute food animation. Photorealistic meat texture, same film grain. No text.\n画面要求：背景不透明，纸面或底色铺满整个画面，不要透明、镂空或黑色边角区域。",
+  "aspect_ratio": "9:16",
+  "reference_images": [
+    "/Users/wangyuren/Downloads/視頻拆解/006/素材/s01_freezer_beef_v3_char.png"
+  ],
+  "dimensions": {
+    "width": 941,
+    "height": 1672
+  },
+  "flattened_transparency": false,
+  "revised_prompt": "Edit the referenced image. Keep EVERYTHING identical: the same three frosty fatty beef roll characters, same googly eyes, same tiny arms and legs, same poses, hugging, frost crystals, freezer setting, framing, icy blue lighting, photorealistic meat texture, and same film grain. Change only the mouths. Remove all teeth completely. Give each roll a simple small cartoon mouth with no teeth and no lips, drawn as dark shapes directly on the meat surface like cute food-animation characters. The middle roll should have a small trembling open \"o\" mouth from the cold, with a puff of cold breath coming out. The two side rolls should have small wavy worried mouths. No text. The background must be fully opaque and fill the entire frame; no transparent areas, no cutouts, no black corners or borders.",
+  "route": "raw_prompt"
+}
