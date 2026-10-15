@@ -272,6 +272,43 @@ open(os.path.join(out_dir, 'opuscar98', 'index.html'), 'w', encoding='utf-8').wr
     '{{DESC}}': html.escape(FILM_DESC), '{{HEAD_META}}': film_meta,
     '{{FEATURE_POSTER}}': '../' + FEATURE['poster'], '{{FEATURE_SRC}}': '../' + FEATURE['src'],
     '{{BOOK_TABS}}': book_tabs, '{{BOOK_KINDS}}': book_kinds, '{{BOOK_FILMS}}': book_films}))
+# Thank-you films (made at 300, 800 and 2,000 stars): their own page. Like OPUSCAR 98 the films live in promo/ (not in the repo);
+# the 720p cuts are on the "web" release as stars<n>.mp4 (copied into the site), 1080p on the "thanks" release, posters in img/thanks/.
+THANKS_REL = f'https://github.com/{REPO}/releases/download/thanks'
+THANKS = [  # (id, title, 中文, length, date, description, 中文说明)
+    ('stars2000', '2,000 stars · Refresh', '2000 星 · 刷新', '0:50', '2026-10-12',
+     'One screen, seventeen days. Every count, name and timestamp is real: from the first git push to the 2,000th star, and a reply to the first issue.',
+     '一块屏幕上的十七天。每个数字、名字和时间都是真的：从第一次 git push 到第 2000 颗星，再到给第一个 issue 的回复。'),
+    ('stars800', '800 stars · Reverse Shot', '800 星 · 反打', '0:39', '2026-10-03',
+     'Clawd watches the library\'s films in the projector beam until the film burns through; a reverse shot reveals 800 seats, each with a stargazer\'s name.',
+     'Clawd 站在放映光束里看库里的片子，直到胶片烧穿；镜头反打，800 个座位上写着 800 位观众的名字。'),
+    ('stars300', '300 stars · The Lamplighter', '300 星 · 点灯人', '0:18', '2026-09-28',
+     'In one continuous shot Clawd lights 300 stars, each in a different style; pulled back, they spell 300.',
+     'Clawd 一镜到底点亮 300 颗星，每颗一种画风；镜头拉远，它们拼成 300。')]
+THANKS_URL = SITE_URL + 'thanks/'
+THANKS_DESC = 'Lemo-Opuscar thank-you films at 300, 800 and 2,000 GitHub stars, each made entirely in code by Claude Opus 5.5, with no video model.'
+
+def thanks_films():
+    e = html.escape
+    def one(f):
+        fid, en, zh, dur, day, d_en, d_zh = f
+        src = f'../films/{fid}.mp4' if site else f'../../.release/web/{fid}.mp4'
+        return (f'<section class="film" id="{fid}"><div class="frame"><video controls preload="metadata" playsinline poster="../img/thanks/{fid}.jpg" src="{src}"></video></div>\n'
+                f' <div class="cap"><h2>{e(en)}</h2><span class="cn">{e(zh)}</span><span class="meta">{dur} · {day} · <a href="{THANKS_REL}/{fid}.mp4">1080p ↓</a></span></div>\n'
+                f' <p class="desc">{e(d_en)}</p><p class="desc-cn">{e(d_zh)}</p></section>')
+    return one(THANKS[0]) + '\n<div class="pair">\n' + '\n'.join(one(f) for f in THANKS[1:]) + '\n</div>'
+
+def iso(t): m, s_ = t.split(':'); return f'PT{int(m)}M{int(s_)}S'
+thanks_meta = head_meta(THANKS_URL, 'Thank you for every star · Lemo-Opuscar', THANKS_DESC, SITE_URL + 'img/thanks/stars2000.jpg',
+                        [{'@type': 'CollectionPage', '@id': THANKS_URL, 'url': THANKS_URL, 'name': 'Lemo-Opuscar thank-you films', 'description': THANKS_DESC,
+                          'about': {'@id': REPO_URL}, 'author': {'@id': AUTHOR['@id']},
+                          'hasPart': [{'@type': 'VideoObject', 'name': f[1], 'description': f[5], 'thumbnailUrl': SITE_URL + f'img/thanks/{f[0]}.jpg',
+                                       'uploadDate': f[4], 'duration': iso(f[3]), 'contentUrl': f'{THANKS_REL}/{f[0]}.mp4', 'embedUrl': THANKS_URL + '#' + f[0]}
+                                      for f in THANKS]}, REPO_LD, AUTHOR])
+os.makedirs(os.path.join(out_dir, 'thanks'), exist_ok=True)
+open(os.path.join(out_dir, 'thanks', 'index.html'), 'w', encoding='utf-8').write(fill('thanks.html', {
+    '{{DESC}}': html.escape(THANKS_DESC), '{{HEAD_META}}': thanks_meta, '{{FILMS}}': thanks_films()}))
+
 # the same list as data, for anyone (or any agent) who wants all 98 prompts at once (site only: locally the source sits next door)
 if site: shutil.copy(os.path.join(HERE, 'opuscar98_styles.json'), os.path.join(out_dir, 'opuscar98', 'styles.json'))
 
@@ -287,6 +324,7 @@ def llms_txt():
            f'- [Agent instructions]({BLOB_URL}/AGENTS.md): how an agent directs a film in one of the styles',
            f'- [Gallery]({SITE_URL}): every style with its demo film',
            f'- [OPUSCAR 98]({FILM_URL}): 98 Years of Best Picture ({FEATURE["dur"]}), the feature film made with these tools',
+           f'- [Thank-you films]({THANKS_URL}): films made at 300, 800 and 2,000 stars',
            f'- [OPUSCAR 98, all 98 styles]({FILM_URL}#styles): per film the style, a reusable style prompt, and the shots and direction '
            f'(as JSON: {FILM_URL}styles.json)', '']
     for cn, en in cats:
@@ -305,7 +343,7 @@ if site:   # Pages site: pages + style frames + posters + llms.txt + sitemap
     open(os.path.join(site, 'llms.txt'), 'w', encoding='utf-8').write(llms_txt())
     open(os.path.join(site, 'sitemap.xml'), 'w', encoding='utf-8').write(
         '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-        + ''.join(f'  <url><loc>{u}</loc></url>\n' for u in (SITE_URL, FILM_URL)) + '</urlset>\n')
+        + ''.join(f'  <url><loc>{u}</loc></url>\n' for u in (SITE_URL, FILM_URL, THANKS_URL)) + '</urlset>\n')
 
 
 def readme_grid(zh):
