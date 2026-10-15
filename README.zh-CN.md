@@ -237,6 +237,18 @@ agent 会读三份指南，像一个小工作室一样开工。指南是英文�
  </picture>
 </a>
 
+### 谢谢每一颗星
+
+每到一个里程碑做一支感谢片，和库里所有片子一样全部用代码做成。点海报到<a href="https://lemomo-ai.github.io/lemo-opuscar/thanks/">感谢片页面</a>在线观看。
+
+<a href="https://lemomo-ai.github.io/lemo-opuscar/thanks/#stars2000"><img src="docs/thanks/thanks-2000.jpg" alt="2000 星 · 刷新（50 秒）" width="100%"></a>
+<sub>2000 星 · 刷新（50 秒）</sub>
+
+<table><tr>
+<td width="50%" valign="top"><a href="https://lemomo-ai.github.io/lemo-opuscar/thanks/#stars800"><img src="docs/thanks/thanks-800.jpg" alt="800 星 · 反打（39 秒）"></a><br><sub>800 星 · 反打（39 秒）</sub></td>
+<td width="50%" valign="top"><a href="https://lemomo-ai.github.io/lemo-opuscar/thanks/#stars300"><img src="docs/thanks/thanks-300.jpg" alt="300 星 · 点灯人（18 秒）"></a><br><sub>300 星 · 点灯人（18 秒）</sub></td>
+</tr></table>
+
 ## 授权
 
 **LemoLab × Claude Opus 5.5** 出品，MIT 协议。样片中的第三方素材沿用各自的授权（见各样片的 `CREDITS`）；你在自己片子里使用的素材由你负责。
