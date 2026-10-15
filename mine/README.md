@@ -3,7 +3,7 @@
 2026-10-10 起底座從 huashu-art-motion 換到 lemo-opuscar（畫面品質、導演方法、聲音與渲染工具更成熟）。
 原作者內容（styles/、core/、DIRECTOR.md、TECHNIQUE.md 等）保持不動，方便合併上游更新；我的東西全部放在 `mine/`。
 
-- `通用規範.md`：所有影片共用的規則（每次開工先讀；與 opuscar 衝突時以它為準）。
+- 通用規則已移到 Claude 的 **video-base 技能**（2026-10-15）；`通用規範.md` 只剩指向說明。
 - `routes/`：每種影片類型一份做法（路線）。新類型做完一支就補一份。
 - `films/`：每支成片的代碼與提示詞，下次同類型直接複製改。
 - `tools/breakdown.py`：拆解參考片（取自 huashu-art-motion，MIT）。
