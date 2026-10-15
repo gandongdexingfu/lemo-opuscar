@@ -1,0 +1,46 @@
+// zh -> en string pairs, applied to the built page when --en
+export const EN = [
+  ['lang="zh-CN"', 'lang="en"'],
+  ["等轴测图：工作台上立着一块 CSK-IA 标准试块，左后方是一台数字超声探伤仪。探头在试块顶面移动，声束画在试块正面，探伤仪屏幕实时显示 A 型扫描回波。",
+    "Isometric figure: a CSK-IA calibration block stands on a bench beside a digital ultrasonic flaw detector. A probe slides along the block's top; the beam is drawn on the block's face and the detector shows the A-scan live."],
+  ['"标准"', '"Standard"'], ['"圆弧端"', '"Arc end"'], ['"俯视"', '"Top"'], ['"正面"', '"Front"'],
+  [">标准<", ">Standard<"], [">圆弧端<", ">Arc end<"], [">俯视<", ">Top<"], [">正面<", ">Front<"],
+  ['"斜探头放在顶面中线，声束朝 <b>R100 圆弧</b>。前后移动找最高回波：此时 R100 的圆心（顶面刻线 200）正对的探头位置，就是<b>入射点</b>。"',
+    '"Put the angle probe on the top surface, beam toward the <b>R100 arc</b>. Slide it back and forth for the highest echo: the point of the probe sitting over the arc centre (the scribe at 200) is the <b>index point</b>."'],
+  ['"入射点找到后，量探头前端到圆弧边缘的距离 <b>M</b>（钢尺零点贴着圆弧边）。R100 圆心到边缘正好 100 mm，所以 <b>l₀ = 100 − M</b>。"',
+    '"With the index point found, measure <b>M</b> from the probe\'s front edge to the arc edge (rule zeroed on the edge). Centre to edge is exactly 100 mm, so the front length is <b>l₀ = 100 − M</b>."'],
+  ['"探头调头，声束对准 <b>φ50 孔</b>（孔心距顶面 30 mm）。找到最高回波，量探头前端到试块左端的距离 <b>L</b>，则 <b>K = (L + l₀ − 35) / 30</b>。也可直接读入射点对着的 K 刻线。"',
+    '"Turn the probe round and aim at the <b>Ø50 hole</b> (centre 30 mm below the top). At the highest echo, measure <b>L</b> from the front edge to the block\'s end: <b>K = tan β = (L + l₀ − 35) / 30</b>. Or just read the K scribe under the index point."'],
+  ['"直探头放在 100 mm 厚处，底面回波 B1、B2、B3、B4… 等距排开。<b>不能用始波定零</b>（中间隔着保护膜和耦合层），而是调「延迟」和「范围」，让 <b>B2 对准 50、B4 对准 100</b>，即 1:4。调好后<b>拖动探头</b>：右段只有 91 mm 厚，底波整排左移；跨在 x≈200 的台阶上，85 / 91 / 100 同时出现，这就是测分辨力的原理；移到 φ50 孔上方，孔顶只在 5 mm 深处，底波被挡住。"',
+    '"On the 100 mm section the back-wall echoes B1, B2, B3, B4… are evenly spaced. <b>Never zero on the initial pulse</b> (the wear plate and couplant sit in between): set <b>Delay</b> and <b>Range</b> so that <b>B2 sits at 50 and B4 at 100</b>, a 1:4 scale. Then <b>drag the probe</b>: the right end is only 91 mm thick, so every echo shifts left; straddling the step at x≈200 shows 85 / 91 / 100 at once, the basis of resolution testing; over the Ø50 hole the back wall is shadowed."'],
+  ['"纵波 · 深度 1:4" : "横波 · 声程 K2"', '"LONG · DEPTH 1:4" : "SHEAR · PATH K2"'],
+  [">横波 · 声程<", ">SHEAR · PATH<"],
+  ['"R100 回波 " + amp + "% · 入射点 x = " + x.toFixed(1) + (amp > 97 ? " · 正对圆心 ✓" : "")',
+    '"R100 echo " + amp + "% · index point x = " + x.toFixed(1) + (amp > 97 ? " · over the centre ✓" : "")'],
+  ['" mm" + (amp > 97 ? " ✓" : " (回波 " + amp + "%)")', '" mm" + (amp > 97 ? " ✓" : " (echo " + amp + "%)")'],
+  ['"° · 孔回波 " + amp + "%"', '"° · hole echo " + amp + "%"'],
+  ['"探头 x = " + x.toFixed(0) + " · 一次回波 " + (fs.length ? fs.join(" / ") : "无") + (fs.length >= 2 ? " · 能分开吗？" : "")',
+    '"probe x = " + x.toFixed(0) + " · first echoes " + (fs.length ? fs.join(" / ") : "none") + (fs.length >= 2 ? " · resolved?" : "")'],
+  ['"范围 " + range.toFixed(0) + " · 延迟 " + delay.toFixed(1)', '"range " + range.toFixed(0) + " · delay " + delay.toFixed(1)'],
+  ['"深度 " + (ech.main.d || 0).toFixed(1) + " · " + ((ech.main.s + ZERO - dl) / r * 100).toFixed(1) + "格"',
+    '"D " + (ech.main.d || 0).toFixed(1) + " · " + ((ech.main.s + ZERO - dl) / r * 100).toFixed(1) + " div"'],
+  ["<title>CSK-IA 试块</title>", "<title>CSK-IA Calibration Block</title>"],
+  [">CSK-IA 试块<", ">CSK-IA block<"],
+  ["按住拖动探头 · 1–4 切换功能", "Drag the probe · keys 1–4 switch"],
+  ["R100 回波 —", "R100 echo —"],
+  ["声束与回波脉冲：回波最高时声束变实", "Beam and pulse: the beam turns solid at the echo peak"],
+  ["CSK-ⅠA：20 mm 层到 R100，前面 5 mm 层只到 R50", "CSK-IA: the 20 mm layer reaches R100, the front 5 mm layer stops at R50"],
+  ["探伤仪屏幕：A 型显示，横轴声程，纵轴波高", "Detector screen: A-scan, sound path across, amplitude up"],
+  ["试块按 NB/T 47013.3 图 13 尺寸建模（300×100×25，R100/R50 圆心在顶面 200 处，φ50 孔心距顶面 30，φ1.5 孔距底面 15）。演示用斜探头 2.5P 13×13 K2、前沿 12 mm；直探头零偏（保护膜 + 耦合层）设为 2.6 mm。波幅按「偏离声束轴越远越低」示意，不是声场计算。",
+    "Block modelled to NB/T 47013.3 Fig. 13 (300×100×25; R100/R50 centred on the top at 200; Ø50 hole centre 30 below the top; Ø1.5 hole 15 above the bottom). Demo probes: 2.5 MHz 13×13 K2 angle probe with 12 mm front length; straight-probe zero offset (wear plate + couplant) 2.6 mm. Echo heights are illustrative (they fall as the reflector leaves the beam axis), not a sound-field calculation."],
+  ["CSK-IA 试块演示：左右方向键移动探头，数字键 1 到 4 切换功能", "CSK-IA demo: arrow keys move the probe, number keys 1 to 4 switch the test"],
+  ['aria-label="视角"', 'aria-label="View"'],
+  ['"① 入射点", "② 前沿长度", "③ K 值", "④ 直探头"', '"① Index point", "② Front length", "③ K value", "④ Straight probe"'],
+  [">① 入射点<", ">① Index point<"], [">② 前沿长度<", ">② Front length<"], [">③ K 值<", ">③ K value<"], [">④ 直探头<", ">④ Straight probe<"],
+  ["<label>范围 <input", "<label>Range <input"], ["<label>延迟 <input", "<label>Delay <input"],
+];
+export function toEn(text) {
+  let out = text;
+  for (const [a, b] of EN) out = out.split(a).join(b);
+  return out;
+}
