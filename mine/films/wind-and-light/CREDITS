@@ -1,0 +1,25 @@
+風與光 · OF WIND AND LIGHT — third-party material in this film
+
+FOOTAGE
+  11 clips supplied by the author of this film (not in git; put them in footage/ to rebuild). Cut, retimed, cropped and colour-graded.
+  Several clips carry marks of the account "Earthcurated" / "Earthcurated Media"; the marks were cropped
+  out of frame (rain street, pink dusk sky, stars over daisies) or removed with delogo (stormy cliff path).
+  A faint mark remains in the highway clip (centre) and the blossom clip (upper left), too faint and too
+  central to crop. The author is responsible for holding the rights to use this footage.
+
+MUSIC
+  Original score written for this film (tools/music.py), rendered from sampled instruments:
+  Samples (CC0): VS Chamber Orchestra: Community Edition (Versilian Studios), Versilian Community Sample Library (Versilian Studios)
+  Instruments used: harp, organ, organ_soft, organ_pedal, contrabass, cellos, cellos_spic, violins, violins_spic,
+  clarinet_stac, flute, flute_stac, horn, vibraphone_bowed, gran_cassa, sus_cymbal.
+
+TEXT
+  "We need the tonic of wildness." — Henry David Thoreau, Walden; or, Life in the Woods (1854), chapter "Spring". Public domain.
+  Chinese rendering 「我們需要荒野的滋養。」 written for this film.
+
+FONTS (SIL Open Font License 1.1, fonts/OFL-*.txt)
+  Michroma — The Michroma Project Authors (github.com/google/fonts/tree/main/ofl/michroma)
+  Noto Sans TC — Google (github.com/google/fonts/tree/main/ofl/notosanstc)
+
+TECHNIQUE
+  Grade, frame blending, grid and day ring adapted from the Time-lapse Symphony style of the Lemo-Opuscar library.

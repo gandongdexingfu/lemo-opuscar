@@ -1,0 +1,10 @@
+# source clips, fonts and renders stay local (the film is in Release wild-and-light-v1)
+footage/
+fonts/*.ttf
+work/
+out/
+audio/
+stills/
+texts.json
+*.mp4
+poster.jpg
